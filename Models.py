@@ -23,6 +23,13 @@ class User(ABC):
         self.password = password
         self.role = None        # child კლასი დააყენებს
         self.created_at = datetime.datetime.now()
+        
+        # Email Verification & Security
+        self.is_verified = False
+        self.verification_code = None
+        self.is_2fa_enabled = False
+        self.two_fa_secret = None
+        self.recovery_code = None
 
     @property
     def email(self):

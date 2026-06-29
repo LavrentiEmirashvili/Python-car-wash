@@ -1,0 +1,58 @@
+2026-06-30 02:29:51,827 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 02:29:51,827 - Finished register_customer
+2026-06-30 02:33:30,919 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 02:33:30,920 - Finished register_customer
+2026-06-30 02:33:30,920 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), 'AA-999-ZZ', 'BMW X5', 'Black'), kwargs: {}
+2026-06-30 02:33:30,920 - Finished register_car
+2026-06-30 02:33:30,920 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AA-999-ZZ', model='BMW X5'), datetime.date(2026, 6, 30), datetime.time(15, 0), 'staff_wash'), kwargs: {}
+2026-06-30 02:35:13,539 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 02:35:13,539 - Finished register_customer
+2026-06-30 02:35:13,539 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), 'BB-111-CC', 'Test', 'Red'), kwargs: {}
+2026-06-30 02:35:13,539 - Finished register_car
+2026-06-30 02:35:13,540 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10d5\u10d0\u10d9\u10d4', district='\u10d5\u10d0\u10d9\u10d4'), Car(plate='BB-111-CC', model='Test'), datetime.date(2026, 6, 30), datetime.time(16, 0), 'self_service'), kwargs: {}
+2026-06-30 02:35:13,540 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0000 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 02:35:13,540 - Finished create_booking
+2026-06-30 02:45:21,504 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 02:45:21,504 - Finished register_customer
+2026-06-30 02:48:08,680 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 02:48:08,680 - Finished register_customer
+2026-06-30 02:50:48,152 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), 'EK-888-LA', 'Toyota Prius', 'White'), kwargs: {}
+2026-06-30 02:50:48,153 - Finished register_car
+2026-06-30 03:07:07,609 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 03:07:07,609 - Finished register_customer
+2026-06-30 03:16:15,395 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 03:16:15,396 - Finished register_customer
+2026-06-30 03:16:15,396 - Starting register_customer with args: ('Test User', 'test@example.com', '555999888', 'pass123'), kwargs: {}
+2026-06-30 03:16:15,396 - Finished register_customer
+2026-06-30 03:16:15,396 - To: test@example.com
+Subject: Account Verification Code
+Body: Your verification code is: 338439
+------------------------------
+2026-06-30 03:16:15,411 - To: test@example.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 427786
+------------------------------
+2026-06-30 03:16:15,411 - To: test@example.com
+Subject: Password Recovery Code
+Body: Your password recovery code is: 867346
+------------------------------
+2026-06-30 03:17:00,251 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 03:17:00,251 - Finished register_customer
+2026-06-30 03:17:33,830 - Starting register_customer with args: ('\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', 'lavrentiemirashvili@gmail.com', '599477813', 'Lavrenti123.'), kwargs: {}
+2026-06-30 03:17:33,830 - Finished register_customer
+2026-06-30 03:17:33,830 - To: lavrentiemirashvili@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 211340
+------------------------------
+2026-06-30 03:20:15,856 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 074084
+------------------------------
+2026-06-30 03:20:41,725 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 03:20:41,726 - Finished register_customer
+2026-06-30 03:21:41,646 - Starting register_customer with args: ('\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', 'emirashvililavrenti@gmail.com', '599477813', 'Lavrenti123.'), kwargs: {}
+2026-06-30 03:21:41,646 - Finished register_customer
+2026-06-30 03:21:41,646 - To: emirashvililavrenti@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 774348
+------------------------------

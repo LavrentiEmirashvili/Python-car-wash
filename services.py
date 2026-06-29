@@ -34,6 +34,54 @@ services.py
 import datetime
 from Models import Admin, Staff, Customer, Car, Station, Booking
 from decorators import log_action, require_role, validate_email, validate_phone, validate_plate, timer
+import email_service
+
+# ============================================================
+# Security & Verification Services
+# ============================================================
+
+def initiate_email_verification(user):
+    code = email_service.generate_code()
+    user.verification_code = code
+    email_service.send_verification_code(user.email, code)
+    return code
+
+def verify_email(user, code):
+    if user.verification_code == code:
+        user.is_verified = True
+        user.verification_code = None
+        return True
+    return False
+
+def initiate_2fa(user):
+    if not user.is_2fa_enabled:
+        return None
+    code = email_service.generate_code()
+    user.two_fa_secret = code # Using two_fa_secret to store current login code for simplicity
+    email_service.send_2fa_code(user.email, code)
+    return code
+
+def verify_2fa(user, code):
+    if user.two_fa_secret == code:
+        user.two_fa_secret = None
+        return True
+    return False
+
+def request_password_recovery(users, email):
+    user = next((u for u in users if u.email.lower() == email.lower()), None)
+    if user:
+        code = email_service.generate_code()
+        user.recovery_code = code
+        email_service.send_recovery_code(user.email, code)
+        return True
+    return False
+
+def reset_password(user, code, new_password):
+    if user.recovery_code == code:
+        user.password = new_password
+        user.recovery_code = None
+        return True
+    return False
 
 
 # ============================================================
