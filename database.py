@@ -39,6 +39,9 @@ def init_db():
             is_2fa_enabled BOOLEAN DEFAULT 0,
             two_fa_secret TEXT,
             recovery_code TEXT,
+            points INTEGER DEFAULT 0,
+            balance REAL DEFAULT 0.0,
+            profile_picture TEXT,
             registered_at TEXT, -- For Customers
             station_id INTEGER, -- For Staff
             FOREIGN KEY (station_id) REFERENCES stations (id)
@@ -77,6 +80,18 @@ def init_db():
     """)
 
     conn.commit()
+
+    # Simple Migration: Add missing columns if they don't exist
+    cursor.execute("PRAGMA table_info(users)")
+    columns = [row['name'] for row in cursor.fetchall()]
+    if 'points' not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0")
+    if 'balance' not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0.0")
+    if 'profile_picture' not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
+    
+    conn.commit()
     conn.close()
 
 def save_user(user):
@@ -93,8 +108,8 @@ def save_user(user):
         cursor.execute("""
             INSERT INTO users (role, name, email, phone, password, created_at, is_verified, 
                                verification_code, is_2fa_enabled, two_fa_secret, recovery_code, 
-                               registered_at, station_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               points, balance, profile_picture, registered_at, station_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(email) DO UPDATE SET
                 name=excluded.name,
                 phone=excluded.phone,
@@ -104,12 +119,16 @@ def save_user(user):
                 is_2fa_enabled=excluded.is_2fa_enabled,
                 two_fa_secret=excluded.two_fa_secret,
                 recovery_code=excluded.recovery_code,
+                points=excluded.points,
+                balance=excluded.balance,
+                profile_picture=excluded.profile_picture,
                 registered_at=excluded.registered_at,
                 station_id=excluded.station_id
         """, (
             user.role, user.name, user.email, user.phone, user.password, 
             user.created_at.isoformat(), int(user.is_verified),
             user.verification_code, int(user.is_2fa_enabled), user.two_fa_secret, user.recovery_code,
+            user.points, user.balance, user.profile_picture,
             registered_at, station_id
         ))
         conn.commit()
@@ -145,6 +164,35 @@ def save_car(customer_id, car):
                 color=excluded.color
         """, (customer_id, car.plate, car.model, car.color))
         conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_car(customer_email, plate):
+    """Delete a car (and its bookings) for the given customer by plate."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        # Find customer id
+        cursor.execute("SELECT id FROM users WHERE email = ?", (customer_email,))
+        user_row = cursor.fetchone()
+        if not user_row:
+            return False
+        customer_id = user_row['id']
+
+        # Find car id by plate and owner
+        cursor.execute("SELECT id FROM cars WHERE plate = ? AND customer_id = ?", (plate.upper(), customer_id))
+        car_row = cursor.fetchone()
+        if not car_row:
+            return False
+        car_id = car_row['id']
+
+        # Delete related bookings first to avoid orphans
+        cursor.execute("DELETE FROM bookings WHERE car_id = ?", (car_id,))
+        # Delete the car itself
+        cursor.execute("DELETE FROM cars WHERE id = ?", (car_id,))
+        conn.commit()
+        return True
     finally:
         conn.close()
 
@@ -218,6 +266,9 @@ def load_all_data():
         u.is_2fa_enabled = bool(row['is_2fa_enabled'])
         u.two_fa_secret = row['two_fa_secret']
         u.recovery_code = row['recovery_code']
+        u.points = row['points'] or 0
+        u.balance = row['balance'] or 0.0
+        u.profile_picture = row['profile_picture']
         
         users.append(u)
         user_map[row['id']] = u
@@ -262,3 +313,19 @@ def load_all_data():
 
 def update_booking_status(booking):
     save_booking(booking)
+
+def delete_user(user):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id FROM users WHERE email = ?", (user.email,))
+        row = cursor.fetchone()
+        if row:
+            user_id = row['id']
+            # Delete related data first
+            cursor.execute("DELETE FROM bookings WHERE customer_id = ?", (user_id,))
+            cursor.execute("DELETE FROM cars WHERE customer_id = ?", (user_id,))
+            cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+            conn.commit()
+    finally:
+        conn.close()

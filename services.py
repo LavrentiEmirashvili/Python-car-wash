@@ -100,30 +100,32 @@ SERVICE_PRICES = {
     "self_service": 12.0,
 }
 
-LOYALTY_DISCOUNT_AFTER_YEARS = 0.5    # 6 თვე -- years_as_customer() აბრუნებს წლებს float-ად
-LOYALTY_DISCOUNT_RATE = 0.10          # 10%
 LATE_CANCEL_FEE = 5.0
 
 
 def calculate_booking_price(booking):
-    """საბაზისო ფასი + ლოიალურობის ფასდაკლება, თუ მომხმარებელი საკმარისად დიდხანსაა რეგისტრირებული."""
+    """საბაზისო ფასი + ლოიალურობის ფასდაკლება ქულების მიხედვით."""
     base_price = SERVICE_PRICES[booking.booking_type]
     customer = booking.customer
-
-    if customer.years_as_customer() >= LOYALTY_DISCOUNT_AFTER_YEARS:
-        discount = base_price * LOYALTY_DISCOUNT_RATE
-        base_price -= discount
+    
+    discount_rate = customer.get_loyalty_discount()
+    discount = base_price * discount_rate
+    base_price -= discount
 
     return round(base_price, 2)
 
 
 def calculate_cancellation_fee(booking):
-    """თუ ჯავშნამდე 1 საათზე ნაკლები დარჩა, ჯარიმდება გაუქმება."""
+    """თუ ჯავშნამდე 1 საათზე ნაკლები დარჩა, ჯარიმდება გაუქმება (ლოიალურობის ფასდაკლებით)."""
     booking_datetime = datetime.datetime.combine(booking.date, booking.time)
     time_remaining = booking_datetime - datetime.datetime.now()
 
     if time_remaining < datetime.timedelta(hours=1):
-        return LATE_CANCEL_FEE
+        fee = LATE_CANCEL_FEE
+        customer = booking.customer
+        discount_rate = customer.get_loyalty_discount()
+        fee -= (fee * discount_rate)
+        return round(fee, 2)
     return 0.0
 
 
@@ -164,6 +166,21 @@ def register_car(customer, plate, model, color):
     return car
 
 
+def remove_car(customer, plate):
+    """Remove a car from the customer's account and persist deletion."""
+    # Find car in memory
+    target = next((c for c in customer.cars if c.plate.upper() == plate.upper()), None)
+    if not target:
+        raise ValueError(f"მანქანა {plate} ვერ მოიძებნა")
+
+    # Remove from in-memory list
+    customer.cars = [c for c in customer.cars if c.plate.upper() != plate.upper()]
+
+    # Persist in database
+    database.delete_car(customer.email, plate)
+    return True
+
+
 # ============================================================
 # ჯავშნის სამუშაო პროცესი
 # ============================================================
@@ -189,9 +206,17 @@ def create_booking(customer, station, car, date, time, booking_type):
 
     station.add_booking(booking)
     booking.confirm()
+
+    # Calculate price BEFORE earning new points so discount uses current tier
+    price = calculate_booking_price(booking)
+
+    # Earn points and deduct balance
+    customer.points += 10  # +10 per reservation
+    customer.balance -= price  # Deduct booking price from balance
+    database.save_user(customer)
+
     database.save_booking(booking)
 
-    price = calculate_booking_price(booking)
     return booking, price
 
 
@@ -201,6 +226,12 @@ def cancel_booking(booking):
     fee = calculate_cancellation_fee(booking)
     booking.cancel()   # booking.cancel() თავად ისვრის ValueError-ს, თუ status == 'completed'
     database.update_booking_status(booking)
+
+    # Deduct cancellation fee from customer's balance if any
+    if fee and fee > 0:
+        booking.customer.balance -= fee
+        database.save_user(booking.customer)
+
     return fee
 
 

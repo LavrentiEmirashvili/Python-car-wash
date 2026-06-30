@@ -31,6 +31,11 @@ class User(ABC):
         self.two_fa_secret = None
         self.recovery_code = None
 
+        # New fields
+        self.points = 0
+        self.balance = 0.0
+        self.profile_picture = None # Path to image
+
     @property
     def email(self):
         return self._email
@@ -96,7 +101,38 @@ class Customer(User):
         self.cars = []
 
     def get_dashboard(self):
-        return f"კლიენტის პანელი: {len(self.cars)} მანქანა, ჯავშნების ისტორია"
+        return f"კლიენტის პანელი: {len(self.cars)} მანქანა, {self.points} ქულა, ბალანსი: {self.balance}₾"
+
+    def get_loyalty_tier(self):
+        if self.points >= 1000:
+            return "Gold"
+        elif self.points >= 750:
+            return "Silver"
+        elif self.points >= 500:
+            return "Bronze"
+        return "None"
+
+    def get_loyalty_info(self):
+        """Returns (current_tier, next_tier, min_pts, max_pts, current_pts)"""
+        pts = self.points
+        if pts >= 1000:
+            return "Gold", "Max", 1000, 1000, pts
+        elif pts >= 750:
+            return "Silver", "Gold", 750, 1000, pts
+        elif pts >= 500:
+            return "Bronze", "Silver", 500, 750, pts
+        else:
+            return "None", "Bronze", 0, 500, pts
+
+    def get_loyalty_discount(self):
+        tier = self.get_loyalty_tier()
+        discounts = {
+            "Gold": 0.20,
+            "Silver": 0.15,
+            "Bronze": 0.10,
+            "None": 0.0
+        }
+        return discounts.get(tier, 0.0)
 
     def add_car(self, car):
         if not isinstance(car, Car):

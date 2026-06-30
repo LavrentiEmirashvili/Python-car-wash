@@ -167,3 +167,53 @@ Body:
 Subject: 2FA Login Code
 Body: Your 2FA login code is: 488391
 ------------------------------
+2026-06-30 05:36:09,213 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 914470
+------------------------------
+2026-06-30 05:39:37,086 - Starting register_car with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), '', '', ''), kwargs: {}
+2026-06-30 05:39:37,092 - Finished register_car
+2026-06-30 05:39:41,031 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', model='Ferrari F40'), datetime.date(2026, 6, 30), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-06-30 05:39:41,042 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0114 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 05:39:41,042 - Finished create_booking
+2026-06-30 05:39:50,741 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', model='Ferrari F40'), datetime.date(2026, 6, 30), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-06-30 05:39:55,213 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', model='Ferrari F40'), datetime.date(2026, 6, 30), datetime.time(10, 1), 'staff_wash'), kwargs: {}
+2026-06-30 05:39:55,222 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0091 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 05:39:55,222 - Finished create_booking
+2026-06-30 05:44:40,749 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 359319
+------------------------------
+2026-06-30 05:47:03,150 - Starting cancel_booking with args: (Booking(customer='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', date=datetime.date(2026, 6, 30), status='confirmed'),), kwargs: {}
+2026-06-30 05:47:03,156 - Finished cancel_booking
+2026-06-30 05:47:04,710 - Starting cancel_booking with args: (Booking(customer='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', date=datetime.date(2026, 6, 30), status='confirmed'),), kwargs: {}
+2026-06-30 05:47:04,716 - Finished cancel_booking
+2026-06-30 05:55:34,849 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 807210
+------------------------------
+2026-06-30 05:56:02,327 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 245671
+------------------------------
+2026-06-30 05:56:59,897 - Starting register_car with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), 'aa-567-dd', 'test', '\u10d7\u10d4\u10d7\u10e0\u10d8'), kwargs: {}
+2026-06-30 05:56:59,901 - Finished register_car
+2026-06-30 05:57:06,884 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AA-567-DD', model='test'), datetime.date(2026, 6, 30), datetime.time(5, 0), 'staff_wash'), kwargs: {}
+2026-06-30 05:57:06,895 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0111 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 05:57:06,896 - Finished create_booking
+2026-06-30 06:00:03,438 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 638199
+------------------------------
+2026-06-30 06:00:36,654 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 724012
+------------------------------
+2026-06-30 06:01:12,094 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 807985
+------------------------------
+2026-06-30 06:01:46,407 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 164408
+------------------------------

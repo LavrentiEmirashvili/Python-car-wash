@@ -6,7 +6,7 @@ Uses Models, services (with decorators), and role-based dashboards.
 import datetime
 
 from PyQt5.QtCore import Qt, QDate, QTime
-from PyQt5.QtGui import QFont, QIcon, QPixmap, QPainter, QColor
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QPainter, QColor, QPainterPath
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
@@ -30,6 +30,12 @@ from PyQt5.QtWidgets import (
     QTimeEdit,
     QVBoxLayout,
     QWidget,
+    QProgressBar,
+    QFileDialog,
+    QCheckBox,
+    QSpacerItem,
+    QSizePolicy,
+    QScrollArea,
 )
 
 from Models import Customer, Staff
@@ -45,6 +51,7 @@ from services import (
     get_customer_upcoming_bookings,
     most_popular_service,
     register_car,
+    remove_car,
     total_revenue,
     initiate_email_verification,
     verify_email,
@@ -53,18 +60,19 @@ from services import (
     request_password_recovery,
     reset_password
 )
+import database
 from store import AppStore
 
-# Color palette — base tone #170312 with derived surfaces for depth
-COLOR_BG = "#170312"
-COLOR_SURFACE = "#221018"
-COLOR_ELEVATED = "#2d1524"
-COLOR_BORDER = "#452035"
+# Color palette
+COLOR_BG = "#312c51"
+COLOR_SURFACE = "#48426d"
+COLOR_ELEVATED = "#5b548a"
+COLOR_BORDER = "#f0c3be"
 COLOR_TEXT = "#f5eef3"
-COLOR_TEXT_MUTED = "#a8899c"
-COLOR_ACCENT = "#f5eef3"
-COLOR_ACCENT_TEXT = "#170312"
-COLOR_HOVER = "#3a1a2e"
+COLOR_TEXT_MUTED = "#b3afc9"
+COLOR_ACCENT = "#f0c3be"
+COLOR_ACCENT_TEXT = "#312c51"
+COLOR_HOVER = "#5b548a"
 
 FONT_FAMILY = '"Noto Sans Georgian", "Segoe UI Variable", "Segoe UI", sans-serif'
 FONT_SIZE_BASE = 15
@@ -84,6 +92,36 @@ STATUS_LABELS = {
 }
 
 
+def _make_circular_pixmap(src_pix: QPixmap, size: int) -> QPixmap:
+    """Return a circular-clipped pixmap of the given size from source pixmap."""
+    if src_pix is None or src_pix.isNull():
+        # placeholder background
+        pm = QPixmap(size, size)
+        pm.fill(Qt.transparent)
+        painter = QPainter(pm)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(QColor(COLOR_SURFACE))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(0, 0, size, size)
+        painter.end()
+        return pm
+
+    scaled = src_pix.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+    result = QPixmap(size, size)
+    result.fill(Qt.transparent)
+    painter = QPainter(result)
+    painter.setRenderHint(QPainter.Antialiasing)
+    path = QPainterPath()
+    path.addEllipse(0, 0, size, size)
+    painter.setClipPath(path)
+    # center the scaled image
+    dx = (scaled.width() - size) // 2
+    dy = (scaled.height() - size) // 2
+    painter.drawPixmap(-dx, -dy, scaled)
+    painter.end()
+    return result
+
+
 def configure_table(table):
     table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -91,6 +129,21 @@ def configure_table(table):
     table.setAlternatingRowColors(True)
     table.setShowGrid(False)
     table.verticalHeader().setVisible(False)
+    table.verticalHeader().setDefaultSectionSize(45)
+    table.setStyleSheet(f"""
+        QTableWidget {{
+            background-color: {COLOR_SURFACE};
+            border: 1px solid {COLOR_BORDER};
+            border-radius: 12px;
+        }}
+        QTableWidget::item {{
+            padding: 8px;
+        }}
+        QTableWidget::item:selected {{
+            background-color: {COLOR_ACCENT};
+            color: {COLOR_ACCENT_TEXT};
+        }}
+    """)
 
 
 def show_error(parent, title, exc):
@@ -426,13 +479,37 @@ class CustomerDashboard(QWidget):
         self._build_ui()
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(16)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        
+        container = QWidget()
+        container.setObjectName("dashboardContainer")
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+
+        # Header area
+        header_card = QFrame()
+        header_card.setObjectName("loginCard") # Reuse card style
+        header_card_layout = QVBoxLayout(header_card)
+        
         self.header = QLabel()
         self.header.setObjectName("dashboardHeader")
         self.header.setWordWrap(True)
-        layout.addWidget(self.header)
+        header_card_layout.addWidget(self.header)
+
+        # Loyalty Area
+        self.loyalty_container = QWidget()
+        self.loyalty_bars_layout = QVBoxLayout(self.loyalty_container)
+        self.loyalty_bars_layout.setContentsMargins(0, 5, 0, 0)
+        header_card_layout.addWidget(self.loyalty_container)
+        
+        layout.addWidget(header_card)
 
         tabs = QTabWidget()
 
@@ -441,6 +518,11 @@ class CustomerDashboard(QWidget):
         cars_layout = QVBoxLayout(cars_tab)
         self.cars_table = self._make_table(["სანომრე", "მოდელი", "ფერი"])
         cars_layout.addWidget(self.cars_table)
+
+        remove_btn = QPushButton("არჩეული მანქანის წაშლა")
+        remove_btn.setObjectName("secondaryBtn")
+        remove_btn.clicked.connect(self._remove_car)
+        cars_layout.addWidget(remove_btn)
 
         add_group = QGroupBox("მანქანის დამატება")
         add_form = QFormLayout(add_group)
@@ -517,6 +599,8 @@ class CustomerDashboard(QWidget):
         tabs.addTab(history_tab, "ისტორია")
 
         layout.addWidget(tabs)
+        scroll.setWidget(container)
+        main_layout.addWidget(scroll)
 
     def _make_table(self, headers):
         table = QTableWidget(0, len(headers))
@@ -526,10 +610,26 @@ class CustomerDashboard(QWidget):
 
     def refresh(self):
         user = self.store.current_user
+        if not user: return
+
         self.header.setText(
             f"<b>{user.name}</b> — {user.get_dashboard()}<br>"
-            f"ლოიალურობა: {user.years_as_customer():.1f} წელი"
+            f"ანგარიშის ბალანსი: {user.balance} ₾"
         )
+        
+        # Refresh Loyalty Bars
+        for i in reversed(range(self.loyalty_bars_layout.count())): 
+            item = self.loyalty_bars_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+            elif item.layout():
+                # Clear nested layouts if any
+                while item.layout().count():
+                    child = item.layout().takeAt(0)
+                    if child.widget():
+                        child.widget().setParent(None)
+
+        self.loyalty_bars_layout.addWidget(LoyaltyProgressBar(user))
 
         self._populate_stations(self.store.stations)
         self._refresh_cars()
@@ -570,6 +670,33 @@ class CustomerDashboard(QWidget):
             show_info(self, "მანქანა", "მანქანა წარმატებით დაემატა")
         except (ValueError, TypeError) as exc:
             show_error(self, "მანქანა", exc)
+
+    def _remove_car(self):
+        user = self.store.current_user
+        row = self.cars_table.currentRow()
+        if row < 0:
+            show_error(self, "წაშლა", ValueError("აირჩიეთ მანქანა ცხრილში"))
+            return
+        plate_item = self.cars_table.item(row, 0)
+        if not plate_item:
+            show_error(self, "წაშლა", ValueError("სანომრე ვერ მოიძებნა"))
+            return
+        plate = plate_item.text().strip()
+
+        # Prevent deletion if there are upcoming bookings for this car
+        upcoming_for_car = [b for b in self._all_upcoming() if b.car.plate.upper() == plate.upper()]
+        if upcoming_for_car:
+            show_error(self, "წაშლა", ValueError("ამ მანქანაზე აქტიური ჯავშანია — ჯერ გააუქმეთ ჯავშნები"))
+            return
+        try:
+            remove_car(user, plate)
+            # Also remove related bookings from in-memory stations history for consistency
+            for st in self.store.stations:
+                st.bookings = [b for b in st.bookings if not (b.customer == user and b.car.plate.upper() == plate.upper())]
+            self.refresh()
+            show_info(self, "წაშლა", f"მანქანა {plate} წაიშალა")
+        except (ValueError, TypeError) as exc:
+            show_error(self, "წაშლა", exc)
 
     def _filter_stations(self):
         district = self.district_filter.text().strip()
@@ -676,9 +803,19 @@ class StaffDashboard(QWidget):
         self._build_ui()
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(16)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+
         self.header = QLabel()
         self.header.setObjectName("dashboardHeader")
         self.header.setWordWrap(True)
@@ -701,6 +838,9 @@ class StaffDashboard(QWidget):
         complete_btn.setObjectName("primaryBtn")
         complete_btn.clicked.connect(self._complete_booking)
         layout.addWidget(complete_btn)
+        
+        scroll.setWidget(container)
+        main_layout.addWidget(scroll)
 
     def refresh(self):
         user = self.store.current_user
@@ -765,9 +905,19 @@ class AdminDashboard(QWidget):
         self._build_ui()
 
     def _build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(16)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+
         self.header = QLabel()
         self.header.setObjectName("dashboardHeader")
         self.header.setWordWrap(True)
@@ -824,6 +974,9 @@ class AdminDashboard(QWidget):
         tabs.addTab(staff_tab, "პერსონალი")
 
         layout.addWidget(tabs)
+        
+        scroll.setWidget(container)
+        main_layout.addWidget(scroll)
 
     def refresh(self):
         user = self.store.current_user
@@ -883,6 +1036,256 @@ class AdminDashboard(QWidget):
             show_error(self, "პერსონალი", exc)
 
 
+class LoyaltyProgressBar(QWidget):
+    def __init__(self, user, parent=None):
+        super().__init__(parent)
+        tier, next_tier, min_pts, max_pts, current_pts = user.get_loyalty_info()
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+
+        # Labels
+        label_layout = QHBoxLayout()
+        current_tier_label = QLabel(f"Current Status: {tier}")
+        current_tier_label.setStyleSheet(f"font-weight: bold; color: {COLOR_ACCENT}; font-size: 14px;")
+        
+        points_text = f"{current_pts} pts"
+        if next_tier != "Max":
+            points_text += f" ({max_pts - current_pts} till {next_tier})"
+        else:
+            points_text = f"{current_pts} pts (Max Tier reached!)"
+        
+        points_label = QLabel(points_text)
+        points_label.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 12px;")
+        
+        label_layout.addWidget(current_tier_label)
+        label_layout.addStretch()
+        label_layout.addWidget(points_label)
+        layout.addLayout(label_layout)
+
+        # Progress Bar
+        self.bar = QProgressBar()
+        if next_tier == "Max":
+            self.bar.setRange(0, 100)
+            self.bar.setValue(100)
+        else:
+            self.bar.setRange(min_pts, max_pts)
+            self.bar.setValue(current_pts)
+            
+        self.bar.setTextVisible(False)
+        self.bar.setFixedHeight(14)
+        self.bar.setStyleSheet(f"""
+            QProgressBar {{
+                background-color: {COLOR_ELEVATED};
+                border: 1px solid {COLOR_BORDER};
+                border-radius: 7px;
+            }}
+            QProgressBar::chunk {{
+                background-color: {COLOR_ACCENT};
+                border-radius: 6px;
+            }}
+        """)
+        layout.addWidget(self.bar)
+
+
+class ProfilePage(QWidget):
+    def __init__(self, store: AppStore, on_back, on_logout):
+        super().__init__()
+        self.store = store
+        self.on_back = on_back
+        self.on_logout = on_logout
+        self._build_ui()
+
+    def _build_ui(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setSpacing(30)
+        layout.setContentsMargins(40, 40, 40, 40)
+
+        # Header
+        header_layout = QHBoxLayout()
+        back_btn = QPushButton("← უკან")
+        back_btn.setFixedWidth(100)
+        back_btn.clicked.connect(self.on_back)
+        header_layout.addWidget(back_btn)
+        
+        title = QLabel("პროფილის პარამეტრები")
+        title.setStyleSheet("font-size: 28px; font-weight: bold; margin-left: 20px;")
+        header_layout.addWidget(title)
+        header_layout.addStretch()
+        layout.addLayout(header_layout)
+
+        content = QHBoxLayout()
+        layout.addLayout(content)
+
+        # Left Column: Profile Pic & Tiers
+        left_col = QVBoxLayout()
+        left_col.setSpacing(20)
+        
+        self.pic_label = QLabel()
+        self.pic_label.setFixedSize(180, 180)
+        self.pic_label.setStyleSheet(f"border: 2px solid {COLOR_BORDER}; border-radius: 90px; background: {COLOR_SURFACE};")
+        self.pic_label.setAlignment(Qt.AlignCenter)
+        left_col.addWidget(self.pic_label, 0, Qt.AlignCenter)
+
+        change_pic_btn = QPushButton("სურათის შეცვლა")
+        change_pic_btn.clicked.connect(self._change_pic)
+        left_col.addWidget(change_pic_btn, 0, Qt.AlignCenter)
+
+        self.delete_pic_btn = QPushButton("სურათის წაშლა")
+        self.delete_pic_btn.setStyleSheet("color: #ff4d4d;")
+        self.delete_pic_btn.clicked.connect(self._delete_pic)
+        left_col.addWidget(self.delete_pic_btn, 0, Qt.AlignCenter)
+
+        # Loyalty Section
+        self.loyalty_group = QGroupBox("ლოიალობის სისტემა")
+        self.loyalty_layout = QVBoxLayout(self.loyalty_group)
+        left_col.addWidget(self.loyalty_group)
+        
+        content.addLayout(left_col, 1)
+
+        # Right Column: Personal Info & Settings
+        right_col = QVBoxLayout()
+        right_col.setSpacing(20)
+
+        info_group = QGroupBox("პირადი ინფორმაცია")
+        info_form = QFormLayout(info_group)
+        self.name_label = QLabel()
+        self.email_label = QLabel()
+        self.phone_label = QLabel()
+        self.balance_label = QLabel()
+        self.points_label = QLabel()
+        
+        info_form.addRow("სახელი:", self.name_label)
+        info_form.addRow("ელფოსტა:", self.email_label)
+        info_form.addRow("ტელეფონი:", self.phone_label)
+        info_form.addRow("ბალანსი:", self.balance_label)
+        info_form.addRow("ქულები:", self.points_label)
+        
+        self.verify_btn = QPushButton("იმეილის ვერიფიკაცია")
+        self.verify_btn.setObjectName("primaryBtn")
+        self.verify_btn.clicked.connect(self._verify_email)
+        info_form.addRow(self.verify_btn)
+        
+        right_col.addWidget(info_group)
+
+        settings_group = QGroupBox("უსაფრთხოება და ანგარიში")
+        settings_layout = QVBoxLayout(settings_group)
+        
+        self.two_fa_cb = QCheckBox("2FA ავტორიზაციის ჩართვა")
+        self.two_fa_cb.toggled.connect(self._toggle_2fa)
+        settings_layout.addWidget(self.two_fa_cb)
+
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        settings_layout.addItem(spacer)
+
+        delete_btn = QPushButton("ანგარიშის წაშლა")
+        delete_btn.setStyleSheet("background-color: #ff4d4d; color: white; border: none;")
+        delete_btn.clicked.connect(self._delete_account)
+        settings_layout.addWidget(delete_btn)
+        
+        right_col.addWidget(settings_group)
+        content.addLayout(right_col, 2)
+        
+        scroll.setWidget(container)
+        main_layout.addWidget(scroll)
+
+    def refresh(self):
+        user = self.store.current_user
+        if not user: return
+
+        self.name_label.setText(user.name)
+        self.email_label.setText(user.email)
+        self.phone_label.setText(user.phone)
+        self.balance_label.setText(f"{user.balance} ₾")
+        self.points_label.setText(f"{user.points} pts")
+        
+        self.two_fa_cb.blockSignals(True)
+        self.two_fa_cb.setChecked(user.is_2fa_enabled)
+        self.two_fa_cb.blockSignals(False)
+
+        self.verify_btn.setVisible(not user.is_verified)
+
+        # Refresh Picture
+        if user.profile_picture:
+            pix = QPixmap(user.profile_picture)
+            if not pix.isNull():
+                self.pic_label.setPixmap(_make_circular_pixmap(pix, 180))
+                self.delete_pic_btn.show()
+            else:
+                self.pic_label.setText("No Image")
+                self.delete_pic_btn.hide()
+        else:
+            self.pic_label.setText("No Image")
+            self.delete_pic_btn.hide()
+
+        # Refresh Loyalty Bar
+        for i in reversed(range(self.loyalty_layout.count())): 
+            item = self.loyalty_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
+        
+        if user.role == "customer":
+            self.loyalty_layout.addWidget(LoyaltyProgressBar(user))
+            self.loyalty_group.show()
+        else:
+            self.loyalty_group.hide()
+
+    def _change_pic(self):
+        path, _ = QFileDialog.getOpenFileName(self, "აირჩიეთ სურათი", "", "Images (*.png *.jpg *.jpeg)")
+        if path:
+            self.store.current_user.profile_picture = path
+            database.save_user(self.store.current_user)
+            self.refresh()
+            # Refresh avatar in top bar if available
+            win = self.window()
+            if hasattr(win, "_refresh_top_bar_user"):
+                win._refresh_top_bar_user()
+
+    def _delete_pic(self):
+        self.store.current_user.profile_picture = None
+        database.save_user(self.store.current_user)
+        self.refresh()
+        win = self.window()
+        if hasattr(win, "_refresh_top_bar_user"):
+            win._refresh_top_bar_user()
+
+    def _toggle_2fa(self, enabled):
+        self.store.current_user.is_2fa_enabled = enabled
+        database.save_user(self.store.current_user)
+        status = "ჩაირთო" if enabled else "გაითიშა"
+        show_info(self, "2FA", f"2FA წარმატებით {status}")
+
+    def _verify_email(self):
+        try:
+            initiate_email_verification(self.store.current_user)
+            dlg = VerificationDialog(self.store.current_user.email, self)
+            if dlg.exec_():
+                code = dlg.get_code()
+                if verify_email(self.store.current_user, code):
+                    show_info(self, "ვერიფიკაცია", "იმეილი წარმატებით დადასტურდა!")
+                    self.refresh()
+                else:
+                    show_error(self, "ვერიფიკაცია", "არასწორი კოდი")
+        except Exception as e:
+            show_error(self, "შეცდომა", e)
+
+    def _delete_account(self):
+        reply = QMessageBox.question(self, "ანგარიშის წაშლა", "დარწმუნებული ხართ, რომ გსურთ ანგარიშის წაშლა? ეს ქმედება შეუქცევადია.", QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            database.delete_user(self.store.current_user)
+            self.on_logout()
+
+
 def create_app_icon():
     pixmap = QPixmap(64, 64)
     pixmap.fill(Qt.transparent)
@@ -908,6 +1311,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Car Wash — Premium Management")
         self.setWindowIcon(create_app_icon())
         self.resize(1100, 720)
+        self.setMinimumSize(900, 650)
 
         central = QWidget()
         central.setObjectName("centralWidget")
@@ -929,6 +1333,19 @@ class MainWindow(QMainWindow):
         logout_btn.setObjectName("secondaryBtn")
         logout_btn.clicked.connect(self._logout)
         top_bar.addWidget(logout_btn)
+
+        profile_btn = QPushButton("პროფილი")
+        profile_btn.setObjectName("secondaryBtn")
+        profile_btn.clicked.connect(self._show_profile)
+        top_bar.addWidget(profile_btn)
+
+        # Avatar to the right of profile button
+        self.avatar_label = QLabel()
+        self.avatar_label.setFixedSize(36, 36)
+        self.avatar_label.setStyleSheet(f"border: 2px solid {COLOR_BORDER}; border-radius: 18px; background: {COLOR_SURFACE};")
+        self.avatar_label.setAlignment(Qt.AlignCenter)
+        top_bar.addWidget(self.avatar_label)
+
         root.addWidget(top_bar_frame)
 
         self.stack = QStackedWidget()
@@ -936,11 +1353,13 @@ class MainWindow(QMainWindow):
         self.customer_dashboard = CustomerDashboard(store)
         self.staff_dashboard = StaffDashboard(store)
         self.admin_dashboard = AdminDashboard(store)
+        self.profile_page = ProfilePage(store, self._back_from_profile, self._logout)
 
         self.stack.addWidget(self.login_page)
         self.stack.addWidget(self.customer_dashboard)
         self.stack.addWidget(self.staff_dashboard)
         self.stack.addWidget(self.admin_dashboard)
+        self.stack.addWidget(self.profile_page)
         root.addWidget(self.stack)
 
         self._apply_styles()
@@ -1010,8 +1429,13 @@ class MainWindow(QMainWindow):
                 min-height: 48px;
             }}
 
-            #primaryBtn:hover {{
+            QPushButton:hover {{
                 background-color: #ffffff;
+                border-color: #ffffff;
+            }}
+
+            QPushButton:pressed {{
+                background-color: {COLOR_TEXT_MUTED};
             }}
 
             #primaryBtn:pressed {{
@@ -1211,7 +1635,7 @@ class MainWindow(QMainWindow):
     def _on_login(self, user):
         self.store.current_user = user
         self.top_bar_frame.show()
-        self.user_label.setText(f"მომხმარებელი: {user}  |  {user.get_dashboard()}")
+        self._refresh_top_bar_user()
 
         if user.role == "customer":
             self.customer_dashboard.refresh()
@@ -1228,6 +1652,39 @@ class MainWindow(QMainWindow):
         self.user_label.clear()
         self.top_bar_frame.hide()
         self.stack.setCurrentWidget(self.login_page)
+
+    def _show_profile(self):
+        self.profile_page.refresh()
+        self._refresh_top_bar_user()
+        self.stack.setCurrentWidget(self.profile_page)
+
+    def _back_from_profile(self):
+        user = self.store.current_user
+        if not user:
+            self.stack.setCurrentWidget(self.login_page)
+            return
+
+        self._refresh_top_bar_user()
+
+        if user.role == "customer":
+            self.stack.setCurrentWidget(self.customer_dashboard)
+        elif user.role == "staff":
+            self.stack.setCurrentWidget(self.staff_dashboard)
+        elif user.role == "admin":
+            self.stack.setCurrentWidget(self.admin_dashboard)
+
+    def _refresh_top_bar_user(self):
+        user = self.store.current_user
+        if not user:
+            self.user_label.clear()
+            self.avatar_label.clear()
+            return
+        self.user_label.setText(f"მომხმარებელი: {user}  |  {user.get_dashboard()}")
+        if user.profile_picture:
+            pm = QPixmap(user.profile_picture)
+        else:
+            pm = QPixmap()
+        self.avatar_label.setPixmap(_make_circular_pixmap(pm, 36))
 
 
 def run_app():
