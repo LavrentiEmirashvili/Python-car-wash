@@ -64,15 +64,15 @@ import database
 from store import AppStore
 
 # Color palette
-COLOR_BG = "#312c51"
-COLOR_SURFACE = "#48426d"
-COLOR_ELEVATED = "#5b548a"
-COLOR_BORDER = "#f0c3be"
-COLOR_TEXT = "#f5eef3"
-COLOR_TEXT_MUTED = "#b3afc9"
-COLOR_ACCENT = "#f0c3be"
-COLOR_ACCENT_TEXT = "#312c51"
-COLOR_HOVER = "#5b548a"
+COLOR_BG = "#121212"
+COLOR_SURFACE = "#1e1e1e"
+COLOR_ELEVATED = "#2d2d2d"
+COLOR_BORDER = "#444444"
+COLOR_TEXT = "#eeeeee"
+COLOR_TEXT_MUTED = "#999999"
+COLOR_ACCENT = "#ffffff"
+COLOR_ACCENT_TEXT = "#121212"
+COLOR_HOVER = "#333333"
 
 FONT_FAMILY = '"Noto Sans Georgian", "Segoe UI Variable", "Segoe UI", sans-serif'
 FONT_SIZE_BASE = 15
@@ -100,9 +100,18 @@ def _make_circular_pixmap(src_pix: QPixmap, size: int) -> QPixmap:
         pm.fill(Qt.transparent)
         painter = QPainter(pm)
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.setBrush(QColor(COLOR_SURFACE))
+        painter.setBrush(QColor(COLOR_ELEVATED))
+        painter.setPen(QColor(COLOR_BORDER))
+        painter.drawEllipse(1, 1, size - 2, size - 2)
+
+        # Draw a simple person silhouette icon
+        painter.setBrush(QColor(COLOR_TEXT_MUTED))
         painter.setPen(Qt.NoPen)
-        painter.drawEllipse(0, 0, size, size)
+        # Head
+        painter.drawEllipse(int(size * 0.35), int(size * 0.2), int(size * 0.3), int(size * 0.3))
+        # Body (semicircle)
+        painter.drawChord(int(size * 0.15), int(size * 0.55), int(size * 0.7), int(size * 0.7), 0 * 16, 180 * 16)
+
         painter.end()
         return pm
 
@@ -1216,16 +1225,11 @@ class ProfilePage(QWidget):
         self.verify_btn.setVisible(not user.is_verified)
 
         # Refresh Picture
-        if user.profile_picture:
-            pix = QPixmap(user.profile_picture)
-            if not pix.isNull():
-                self.pic_label.setPixmap(_make_circular_pixmap(pix, 180))
-                self.delete_pic_btn.show()
-            else:
-                self.pic_label.setText("No Image")
-                self.delete_pic_btn.hide()
+        pm = QPixmap(user.profile_picture) if user.profile_picture else QPixmap()
+        self.pic_label.setPixmap(_make_circular_pixmap(pm, 180))
+        if user.profile_picture and not pm.isNull():
+            self.delete_pic_btn.show()
         else:
-            self.pic_label.setText("No Image")
             self.delete_pic_btn.hide()
 
         # Refresh Loyalty Bar
@@ -1324,7 +1328,8 @@ class MainWindow(QMainWindow):
         top_bar_frame.setObjectName("topBar")
         self.top_bar_frame = top_bar_frame
         top_bar = QHBoxLayout(top_bar_frame)
-        top_bar.setContentsMargins(20, 14, 20, 14)
+        top_bar.setContentsMargins(20, 10, 20, 10)
+        top_bar.setSpacing(12)
         self.user_label = QLabel()
         self.user_label.setObjectName("userLabel")
         top_bar.addWidget(self.user_label)
@@ -1341,8 +1346,8 @@ class MainWindow(QMainWindow):
 
         # Avatar to the right of profile button
         self.avatar_label = QLabel()
-        self.avatar_label.setFixedSize(36, 36)
-        self.avatar_label.setStyleSheet(f"border: 2px solid {COLOR_BORDER}; border-radius: 18px; background: {COLOR_SURFACE};")
+        self.avatar_label.setFixedSize(44, 44)
+        self.avatar_label.setStyleSheet(f"border: 2px solid {COLOR_BORDER}; border-radius: 22px; background: {COLOR_ELEVATED};")
         self.avatar_label.setAlignment(Qt.AlignCenter)
         top_bar.addWidget(self.avatar_label)
 
@@ -1388,16 +1393,17 @@ class MainWindow(QMainWindow):
             #userLabel {{
                 color: {COLOR_TEXT_MUTED};
                 font-size: {FONT_SIZE_SMALL}px;
+                font-weight: 500;
             }}
 
             #loginCard, #registerDialog {{
                 background-color: {COLOR_SURFACE};
                 border: 1px solid {COLOR_BORDER};
-                border-radius: 24px;
+                border-radius: 20px;
             }}
 
             #appTitle {{
-                color: {COLOR_TEXT};
+                color: {COLOR_ACCENT};
                 font-size: {FONT_SIZE_TITLE}px;
                 font-weight: 700;
                 letter-spacing: 0.5px;
@@ -1412,67 +1418,58 @@ class MainWindow(QMainWindow):
                 font-size: {FONT_SIZE_BASE}px;
                 color: {COLOR_TEXT};
                 padding: 4px 2px 8px 2px;
+                font-weight: bold;
             }}
 
             QLabel {{
                 background: transparent;
             }}
 
-            #primaryBtn {{
-                background-color: {COLOR_ACCENT};
-                color: {COLOR_ACCENT_TEXT};
-                border: none;
-                padding: 14px 28px;
-                border-radius: 14px;
-                font-weight: 600;
-                font-size: {FONT_SIZE_BASE}px;
-                min-height: 48px;
-            }}
-
-            QPushButton:hover {{
-                background-color: #ffffff;
-                border-color: #ffffff;
-            }}
-
-            QPushButton:pressed {{
-                background-color: {COLOR_TEXT_MUTED};
-            }}
-
-            #primaryBtn:pressed {{
-                background-color: {COLOR_TEXT_MUTED};
-            }}
-
-            #secondaryBtn {{
-                background-color: transparent;
-                color: {COLOR_TEXT};
-                border: 1px solid {COLOR_BORDER};
-                padding: 14px 28px;
-                border-radius: 14px;
-                font-weight: 500;
-                font-size: {FONT_SIZE_BASE}px;
-                min-height: 48px;
-            }}
-
-            #secondaryBtn:hover {{
-                background-color: {COLOR_HOVER};
-                border-color: {COLOR_TEXT_MUTED};
-            }}
-
+            /* Buttons */
             QPushButton {{
                 background-color: {COLOR_ELEVATED};
                 color: {COLOR_TEXT};
                 border: 1px solid {COLOR_BORDER};
-                padding: 12px 22px;
-                border-radius: 12px;
-                font-weight: 500;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: 600;
                 font-size: {FONT_SIZE_BASE}px;
-                min-height: 42px;
+                min-height: 40px;
             }}
 
             QPushButton:hover {{
                 background-color: {COLOR_HOVER};
+                border-color: {COLOR_TEXT_MUTED};
             }}
 
+            QPushButton:pressed {{
+                background-color: {COLOR_BG};
+            }}
+
+            #primaryBtn {{
+                background-color: {COLOR_ACCENT};
+                color: {COLOR_ACCENT_TEXT};
+                border: none;
+                padding: 12px 24px;
+                border-radius: 12px;
+                min-height: 44px;
+            }}
+
+            #primaryBtn:hover {{
+                background-color: {COLOR_TEXT};
+                color: {COLOR_BG};
+            }}
+
+            #secondaryBtn {{
+                background-color: transparent;
+                border: 1px solid {COLOR_BORDER};
+            }}
+            
+            #secondaryBtn:hover {{
+                background-color: {COLOR_ELEVATED};
+            }}
+
+            /* Groups & Tabs */
             QGroupBox {{
                 font-weight: 600;
                 color: {COLOR_TEXT};
@@ -1495,18 +1492,16 @@ class MainWindow(QMainWindow):
                 background-color: {COLOR_SURFACE};
                 border-radius: 16px;
                 top: -1px;
-                padding: 8px;
+                padding: 10px;
             }}
 
             QTabBar::tab {{
                 background-color: transparent;
                 color: {COLOR_TEXT_MUTED};
-                border: none;
-                padding: 12px 24px;
+                padding: 10px 20px;
                 margin-right: 4px;
-                border-radius: 12px;
+                border-radius: 10px;
                 font-weight: 500;
-                font-size: {FONT_SIZE_BASE}px;
             }}
 
             QTabBar::tab:selected {{
@@ -1517,24 +1512,17 @@ class MainWindow(QMainWindow):
 
             QTabBar::tab:hover:!selected {{
                 background-color: {COLOR_HOVER};
-                color: {COLOR_TEXT};
             }}
 
+            /* Tables */
             QTableWidget {{
-                background-color: {COLOR_ELEVATED};
-                alternate-background-color: {COLOR_SURFACE};
+                background-color: {COLOR_SURFACE};
+                alternate-background-color: {COLOR_ELEVATED};
                 border: 1px solid {COLOR_BORDER};
-                border-radius: 14px;
+                border-radius: 12px;
                 gridline-color: {COLOR_BORDER};
                 selection-background-color: {COLOR_HOVER};
-                selection-color: {COLOR_TEXT};
                 outline: none;
-            }}
-
-            QTableWidget::item {{
-                padding: 10px 8px;
-                border: none;
-                font-size: {FONT_SIZE_BASE}px;
             }}
 
             QHeaderView::section {{
@@ -1542,93 +1530,33 @@ class MainWindow(QMainWindow):
                 color: {COLOR_TEXT_MUTED};
                 border: none;
                 border-bottom: 1px solid {COLOR_BORDER};
-                padding: 12px 10px;
+                padding: 10px;
                 font-weight: 600;
-                font-size: {FONT_SIZE_SMALL}px;
             }}
 
+            /* Inputs */
             QLineEdit, QComboBox, QDateEdit, QTimeEdit {{
                 background-color: {COLOR_ELEVATED};
-                color: {COLOR_TEXT};
-                padding: 12px 16px;
                 border: 1px solid {COLOR_BORDER};
-                border-radius: 12px;
-                font-size: {FONT_SIZE_BASE}px;
-                min-height: 22px;
-                selection-background-color: {COLOR_HOVER};
+                border-radius: 10px;
+                padding: 10px 14px;
             }}
 
-            QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QTimeEdit:focus {{
-                border: 1px solid {COLOR_TEXT_MUTED};
+            QLineEdit:focus, QComboBox:focus {{
+                border-color: {COLOR_TEXT_MUTED};
             }}
 
-            QLineEdit::placeholder {{
-                color: {COLOR_TEXT_MUTED};
-            }}
-
-            QComboBox::drop-down {{
-                border: none;
-                width: 28px;
-            }}
-
-            QComboBox QAbstractItemView {{
-                background-color: {COLOR_ELEVATED};
-                color: {COLOR_TEXT};
-                border: 1px solid {COLOR_BORDER};
-                border-radius: 12px;
-                padding: 4px;
-                selection-background-color: {COLOR_HOVER};
-            }}
-
+            /* ScrollBars */
             QScrollBar:vertical {{
-                background: {COLOR_SURFACE};
-                width: 10px;
-                border-radius: 5px;
-                margin: 4px;
+                background: {COLOR_BG};
+                width: 12px;
+                border-radius: 6px;
+                margin: 2px;
             }}
-
             QScrollBar::handle:vertical {{
                 background: {COLOR_BORDER};
-                border-radius: 5px;
-                min-height: 30px;
-            }}
-
-            QScrollBar::handle:vertical:hover {{
-                background: {COLOR_TEXT_MUTED};
-            }}
-
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-                height: 0;
-            }}
-
-            QDialogButtonBox QPushButton {{
-                min-width: 96px;
-                min-height: 42px;
-            }}
-
-            QTabWidget::pane {{
-                border: 1px solid {COLOR_BORDER};
-                border-radius: 12px;
-                top: -1px;
-                background-color: {COLOR_SURFACE};
-                padding: 10px;
-            }}
-
-            QTabBar::tab {{
-                background-color: {COLOR_BG};
-                color: {COLOR_TEXT_MUTED};
-                padding: 10px 20px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
-                margin-right: 4px;
-                border: 1px solid {COLOR_BORDER};
-                border-bottom: none;
-            }}
-
-            QTabBar::tab:selected {{
-                background-color: {COLOR_SURFACE};
-                color: {COLOR_TEXT};
-                font-weight: bold;
+                border-radius: 6px;
+                min-height: 20px;
             }}
         """)
 
@@ -1684,7 +1612,7 @@ class MainWindow(QMainWindow):
             pm = QPixmap(user.profile_picture)
         else:
             pm = QPixmap()
-        self.avatar_label.setPixmap(_make_circular_pixmap(pm, 36))
+        self.avatar_label.setPixmap(_make_circular_pixmap(pm, 44))
 
 
 def run_app():
