@@ -189,7 +189,7 @@ class VerificationDialog(QDialog):
         layout.setContentsMargins(35, 35, 35, 35)
         layout.setSpacing(24)
 
-        title = QLabel("🔐 ვერიფიკაცია")
+        title = QLabel("ვერიფიკაცია")
         title.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_TEXT};")
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
@@ -233,7 +233,7 @@ class PasswordRecoveryDialog(QDialog):
         self.layout.setContentsMargins(35, 35, 35, 35)
         self.layout.setSpacing(20)
 
-        title = QLabel("🔑 პაროლის აღდგენა")
+        title = QLabel("პაროლის აღდგენა")
         title.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {COLOR_TEXT};")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
@@ -243,7 +243,7 @@ class PasswordRecoveryDialog(QDialog):
         self.layout.addWidget(QLabel("ელ-ფოსტა:"))
         self.layout.addWidget(self.email_edit)
         
-        self.send_btn = QPushButton("🚀 კოდის გაგზავნა")
+        self.send_btn = QPushButton("კოდის გაგზავნა")
         self.send_btn.setObjectName("primaryBtn")
         self.layout.addWidget(self.send_btn)
         
@@ -287,12 +287,12 @@ class LoginPage(QWidget):
         card_layout.setContentsMargins(40, 40, 40, 40)
         card_layout.setSpacing(18)
 
-        title = QLabel("✨ Car Wash ✨")
+        title = QLabel("Car Wash")
         title.setObjectName("appTitle")
         title.setAlignment(Qt.AlignCenter)
         card_layout.addWidget(title)
 
-        subtitle = QLabel("პრემიუმ ავტომრეცხის სერვისი")
+        subtitle = QLabel("პრემიუმ ავტოსამრეცხაო სერვისი")
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setObjectName("subtitle")
         card_layout.addWidget(subtitle)
@@ -442,7 +442,7 @@ class CustomerDashboard(QWidget):
         self.cars_table = self._make_table(["სანომრე", "მოდელი", "ფერი"])
         cars_layout.addWidget(self.cars_table)
 
-        add_group = QGroupBox("🚗 მანქანის დამატება")
+        add_group = QGroupBox("მანქანის დამატება")
         add_form = QFormLayout(add_group)
         self.plate_edit = QLineEdit()
         self.plate_edit.setPlaceholderText("AA-123-BB")
@@ -455,7 +455,7 @@ class CustomerDashboard(QWidget):
         add_btn.clicked.connect(self._add_car)
         add_form.addRow(add_btn)
         cars_layout.addWidget(add_group)
-        tabs.addTab(cars_tab, "🚗 მანქანები")
+        tabs.addTab(cars_tab, "მანქანები")
 
         # --- Booking tab ---
         book_tab = QWidget()
@@ -473,9 +473,9 @@ class CustomerDashboard(QWidget):
             self.type_combo.addItem(label, key)
         self.district_filter = QLineEdit()
         self.district_filter.setPlaceholderText("მაგ: საბურთალო")
-        filter_btn = QPushButton("🔍 ფილტრი რაიონით")
+        filter_btn = QPushButton("ფილტრი რაიონით")
         filter_btn.clicked.connect(self._filter_stations)
-        self_service_btn = QPushButton("🧼 მხოლოდ თვითმომსახურება")
+        self_service_btn = QPushButton("მხოლოდ თვითმომსახურება")
         self_service_btn.clicked.connect(self._filter_self_service)
 
         book_form.addRow("სადგური:", self.station_combo)
@@ -488,12 +488,12 @@ class CustomerDashboard(QWidget):
         book_form.addRow(self_service_btn)
         book_layout.addLayout(book_form)
 
-        book_btn = QPushButton("✨ ჯავშნის შექმნა")
+        book_btn = QPushButton("ჯავშნის შექმნა")
         book_btn.setObjectName("primaryBtn")
         book_btn.clicked.connect(self._create_booking)
         book_layout.addWidget(book_btn)
         book_layout.addStretch()
-        tabs.addTab(book_tab, "📅 ახალი ჯავშანი")
+        tabs.addTab(book_tab, "ახალი ჯავშანი")
 
         # --- Upcoming tab ---
         upcoming_tab = QWidget()
@@ -502,10 +502,10 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "დრო", "ტიპი", "სტატუსი", "ფასი"]
         )
         upcoming_layout.addWidget(self.upcoming_table)
-        cancel_btn = QPushButton("❌ არჩეული ჯავშნის გაუქმება")
+        cancel_btn = QPushButton("არჩეული ჯავშნის გაუქმება")
         cancel_btn.clicked.connect(self._cancel_booking)
         upcoming_layout.addWidget(cancel_btn)
-        tabs.addTab(upcoming_tab, "⏳ მომავალი")
+        tabs.addTab(upcoming_tab, "მომავალი ჯავშნები")
 
         # --- History tab ---
         history_tab = QWidget()
@@ -514,7 +514,7 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "ტიპი", "ფასი"]
         )
         history_layout.addWidget(self.history_table)
-        tabs.addTab(history_tab, "📜 ისტორია")
+        tabs.addTab(history_tab, "ისტორია")
 
         layout.addWidget(tabs)
 
@@ -697,7 +697,7 @@ class StaffDashboard(QWidget):
         configure_table(self.bookings_table)
         layout.addWidget(self.bookings_table)
 
-        complete_btn = QPushButton("✅ არჩეული ჯავშნის დასრულება")
+        complete_btn = QPushButton("არჩეული ჯავშნის დასრულება")
         complete_btn.setObjectName("primaryBtn")
         complete_btn.clicked.connect(self._complete_booking)
         layout.addWidget(complete_btn)
@@ -795,7 +795,7 @@ class AdminDashboard(QWidget):
         )
         configure_table(self.bookings_table)
         bookings_layout.addWidget(self.bookings_table)
-        tabs.addTab(bookings_tab, "📅 ყველა ჯავშანი")
+        tabs.addTab(bookings_tab, "ყველა ჯავშანი")
 
         # Staff management
         staff_tab = QWidget()
@@ -816,12 +816,12 @@ class AdminDashboard(QWidget):
         form.addRow("პაროლი:", self.staff_password)
         form.addRow("სადგური:", self.staff_station)
         staff_layout.addLayout(form)
-        add_staff_btn = QPushButton("➕ პერსონალის დამატება")
+        add_staff_btn = QPushButton("პერსონალის დამატება")
         add_staff_btn.setObjectName("primaryBtn")
         add_staff_btn.clicked.connect(self._add_staff)
         staff_layout.addWidget(add_staff_btn)
         staff_layout.addStretch()
-        tabs.addTab(staff_tab, "👥 პერსონალი")
+        tabs.addTab(staff_tab, "პერსონალი")
 
         layout.addWidget(tabs)
 
