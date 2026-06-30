@@ -4,21 +4,12 @@ import string
 import smtplib
 from email.mime.text import MIMEText
 
-# ============================================================
-# SMTP Configuration (Fill these to enable real email sending)
-# ============================================================
-# For Gmail: 
-# SMTP_SERVER = "smtp.gmail.com"
-# SMTP_PORT = 587
-# SMTP_USER = "your-email@gmail.com"
-# SMTP_PASSWORD = "your-app-password"  # Use an App Password, not your regular password
-# ============================================================
 
-SMTP_SERVER = "pro.eu.turbo-smtp.com"
+SMTP_SERVER = "smtp.hostinger.com"
 SMTP_PORT = 587
-SMTP_USER = "c88c20ffaeb430f3a89d"
-SMTP_PASSWORD = ""
-FROM_EMAIL = ""  # Defaults to SMTP_USER if empty
+SMTP_USER = "carwash@emirashvili.xyz"
+SMTP_PASSWORD = "Lavrenti123."
+FROM_EMAIL = "carwash@emirashvili.xyz"
 
 # Configure email logger
 email_logger = logging.getLogger('email_service')
@@ -28,12 +19,12 @@ handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)
 email_logger.addHandler(handler)
 
 def send_email(to_email, subject, body):
-    """Sends a real email if SMTP is configured, otherwise simulates."""
-    # Always log to email.log for development visibility
+    """აგზავნის ნამდვილ მეილს თუ smtp დაკონფიგურებულია"""
+    # ინახავს ლოგებს email.log-ში
     log_entry = f"To: {to_email}\nSubject: {subject}\nBody: {body}\n{'-'*30}"
     email_logger.info(log_entry)
 
-    # Check if real SMTP is configured
+    # ამოწმებს smtp დაკონფიგურებულია თუ არა
     if all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD]):
         try:
             msg = MIMEText(body)
@@ -56,7 +47,7 @@ def send_email(to_email, subject, body):
         print(f"DEBUG: Subject: {subject} | Body: {body}")
 
 def generate_code(length=6):
-    """Generates a random numeric code."""
+    """ქმნის რანდომ 6 ნიშნა კოდს."""
     return ''.join(random.choices(string.digits, k=length))
 
 def send_verification_code(email, code):

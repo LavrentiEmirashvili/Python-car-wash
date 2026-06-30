@@ -56,3 +56,15 @@ Body: Your 2FA login code is: 074084
 Subject: Account Verification Code
 Body: Your verification code is: 774348
 ------------------------------
+2026-06-30 04:02:00,980 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:02:00,980 - Finished register_customer
+2026-06-30 04:02:31,429 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:02:31,429 - Finished register_customer
+2026-06-30 04:02:35,617 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:02:35,618 - Finished register_customer
+2026-06-30 04:03:34,737 - Starting register_customer with args: ('lavrenti', 'lavrentiemirashvili@gmail.com', '599477813', 'Lavrenti123.'), kwargs: {}
+2026-06-30 04:03:34,737 - Finished register_customer
+2026-06-30 04:03:34,737 - To: lavrentiemirashvili@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 022194
+------------------------------
