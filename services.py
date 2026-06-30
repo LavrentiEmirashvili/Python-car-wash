@@ -35,6 +35,7 @@ import datetime
 from Models import Admin, Staff, Customer, Car, Station, Booking
 from decorators import log_action, require_role, validate_email, validate_phone, validate_plate, timer
 import email_service
+import database
 
 # ============================================================
 # Security & Verification Services
@@ -43,6 +44,7 @@ import email_service
 def initiate_email_verification(user):
     code = email_service.generate_code()
     user.verification_code = code
+    database.save_user(user)
     email_service.send_verification_code(user.email, code)
     return code
 
@@ -50,6 +52,7 @@ def verify_email(user, code):
     if user.verification_code == code:
         user.is_verified = True
         user.verification_code = None
+        database.save_user(user)
         return True
     return False
 
@@ -58,12 +61,14 @@ def initiate_2fa(user):
         return None
     code = email_service.generate_code()
     user.two_fa_secret = code # Using two_fa_secret to store current login code for simplicity
+    database.save_user(user)
     email_service.send_2fa_code(user.email, code)
     return code
 
 def verify_2fa(user, code):
     if user.two_fa_secret == code:
         user.two_fa_secret = None
+        database.save_user(user)
         return True
     return False
 
@@ -72,6 +77,7 @@ def request_password_recovery(users, email):
     if user:
         code = email_service.generate_code()
         user.recovery_code = code
+        database.save_user(user)
         email_service.send_recovery_code(user.email, code)
         return True
     return False
@@ -80,6 +86,7 @@ def reset_password(user, code, new_password):
     if user.recovery_code == code:
         user.password = new_password
         user.recovery_code = None
+        database.save_user(user)
         return True
     return False
 
@@ -143,6 +150,17 @@ def register_staff(name, email, phone, password, station_id):
 def register_car(customer, plate, model, color):
     car = Car(plate=plate, model=model, color=color)
     customer.add_car(car)   # თუ დუბლირებული plate-ია, customer.add_car() თავად ისვრის ValueError-ს
+    
+    # Save to database
+    import database
+    conn = database.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ?", (customer.email,))
+    row = cursor.fetchone()
+    if row:
+        database.save_car(row['id'], car)
+    conn.close()
+    
     return car
 
 
@@ -171,6 +189,7 @@ def create_booking(customer, station, car, date, time, booking_type):
 
     station.add_booking(booking)
     booking.confirm()
+    database.save_booking(booking)
 
     price = calculate_booking_price(booking)
     return booking, price
@@ -181,6 +200,7 @@ def cancel_booking(booking):
     """ჯარიმის გამოთვლა ხდება ჯავშნის სტატუსის შეცვლამდე."""
     fee = calculate_cancellation_fee(booking)
     booking.cancel()   # booking.cancel() თავად ისვრის ValueError-ს, თუ status == 'completed'
+    database.update_booking_status(booking)
     return fee
 
 
@@ -192,6 +212,7 @@ def cancel_booking(booking):
 @log_action
 def complete_booking(user, booking):
     booking.complete()
+    database.update_booking_status(booking)
     return booking
 
 

@@ -68,3 +68,14 @@ Body: Your verification code is: 774348
 Subject: Account Verification Code
 Body: Your verification code is: 022194
 ------------------------------
+2026-06-30 04:18:37,670 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:18:37,670 - Finished register_customer
+2026-06-30 04:21:18,551 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:21:18,552 - Finished register_customer
+2026-06-30 04:21:18,558 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), 'BB-777-BB', 'Tesla Model 3', 'Red'), kwargs: {}
+2026-06-30 04:21:18,562 - Finished register_car
+2026-06-30 04:21:18,563 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='BB-777-BB', model='Tesla Model 3'), datetime.date(2026, 7, 1), datetime.time(12, 0), 'staff_wash'), kwargs: {}
+2026-06-30 04:21:18,567 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0044 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 04:21:18,567 - Finished create_booking
+2026-06-30 04:21:58,316 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
+2026-06-30 04:21:58,316 - Finished register_customer
