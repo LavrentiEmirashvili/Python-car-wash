@@ -51,28 +51,55 @@ class AppStore:
 
     def login(self, email: str, password: str):
         email = email.strip().lower()
+        password = password.strip()
         for user in self.users:
-            if user.email.lower() == email and user.password == password:
-                if not user.is_verified:
-                    raise ValueError("გთხოვთ გაიაროთ ელ-ფოსტის ვერიფიკაცია")
-                return user
+            if user.email.lower() == email:
+                if user.password == password:
+                    if not user.is_verified:
+                        raise ValueError("გთხოვთ გაიაროთ ელ-ფოსტის ვერიფიკაცია")
+                    return user
         return None
 
     def logout(self):
         self.current_user = None
 
     def register_new_customer(self, name, email, phone, password):
+        password = password.strip()
         customer = register_customer(name, email, phone, password)
         database.save_user(customer)
-        self.users.append(customer)
-        return customer
+        
+        # Check if user already in memory list and update it, otherwise append
+        existing = next((u for u in self.users if u.email.lower() == email.lower()), None)
+        if existing:
+            # Update existing object's attributes
+            existing.name = name
+            existing.phone = phone
+            existing.password = password
+            # customer might have other defaults but these are the main ones
+            return existing
+        else:
+            self.users.append(customer)
+            return customer
 
     def register_new_staff(self, name, email, phone, password, station_id):
+        password = password.strip()
         staff = register_staff(name, email, phone, password, station_id)
         staff.is_verified = True  # პერსონალი დამატებულია ადმინის მიერ, ვერიფიცირებულია
         database.save_user(staff)
-        self.users.append(staff)
-        return staff
+        
+        # Check if user already in memory list
+        existing = next((u for u in self.users if u.email.lower() == email.lower()), None)
+        if existing:
+            existing.name = name
+            existing.phone = phone
+            existing.password = password
+            existing.role = "staff" # Might be changing role
+            if hasattr(existing, 'station_id'):
+                existing.station_id = station_id
+            return existing
+        else:
+            self.users.append(staff)
+            return staff
 
     def station_for_staff(self, user: Staff):
         idx = user.station_id - 1

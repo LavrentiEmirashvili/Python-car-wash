@@ -79,3 +79,91 @@ Body: Your verification code is: 022194
 2026-06-30 04:21:18,567 - Finished create_booking
 2026-06-30 04:21:58,316 - Starting register_customer with args: ('\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', 'giorgi@gmail.com', '555123456', 'customer123'), kwargs: {}
 2026-06-30 04:21:58,316 - Finished register_customer
+2026-06-30 04:29:47,483 - Starting register_customer with args: ('\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', 'lavrentiemirashvili@gmail.com', '599477813', 'Lavrenti123.'), kwargs: {}
+2026-06-30 04:29:47,484 - Finished register_customer
+2026-06-30 04:29:47,491 - To: lavrentiemirashvili@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 302247
+------------------------------
+2026-06-30 04:32:55,997 - Starting register_customer with args: ('New User', 'newuser@test.com', '555999888', 'NewPassword123'), kwargs: {}
+2026-06-30 04:32:55,997 - Finished register_customer
+2026-06-30 04:33:22,600 - Starting register_customer with args: ('New User', 'newuser@test.com', '555999888', 'NewPassword123'), kwargs: {}
+2026-06-30 04:33:22,601 - Finished register_customer
+2026-06-30 04:35:59,563 - Starting register_customer with args: ('New User', 'newuser@test.com', '555999888', 'NewPassword123'), kwargs: {}
+2026-06-30 04:35:59,563 - Finished register_customer
+2026-06-30 04:37:00,610 - Starting register_customer with args: ('New User', 'newuser@test.com', '555999888', 'NewPassword123'), kwargs: {}
+2026-06-30 04:37:00,610 - Finished register_customer
+2026-06-30 04:37:00,621 - Starting register_customer with args: ('Strip User', 'strip_test@test.com', '555000111', 'mypassword'), kwargs: {}
+2026-06-30 04:37:00,621 - Finished register_customer
+2026-06-30 04:37:07,449 - Starting register_customer with args: ('New User', 'newuser@test.com', '555999888', 'NewPassword123'), kwargs: {}
+2026-06-30 04:37:07,449 - Finished register_customer
+2026-06-30 04:37:07,460 - Starting register_customer with args: ('Strip User', 'strip_test@test.com', '555000111', 'mypassword'), kwargs: {}
+2026-06-30 04:37:07,460 - Finished register_customer
+2026-06-30 04:37:07,463 - Starting register_customer with args: ('Strip User Updated', 'strip_test@test.com', '555000111', 'newpassword'), kwargs: {}
+2026-06-30 04:37:07,463 - Finished register_customer
+2026-06-30 04:38:20,111 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 411639
+------------------------------
+2026-06-30 04:39:03,984 - Starting register_car with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), 'AB-567-CD', 'Ferrari F40', 'Red'), kwargs: {}
+2026-06-30 04:39:03,993 - Finished register_car
+2026-06-30 04:39:21,272 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', model='Ferrari F40'), datetime.date(2026, 6, 30), datetime.time(5, 0), 'staff_wash'), kwargs: {}
+2026-06-30 04:39:21,279 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0068 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 04:39:21,280 - Finished create_booking
+2026-06-30 04:39:25,857 - Starting cancel_booking with args: (Booking(customer='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', date=datetime.date(2026, 6, 30), status='confirmed'),), kwargs: {}
+2026-06-30 04:39:25,864 - Finished cancel_booking
+2026-06-30 04:39:35,528 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 071578
+------------------------------
+2026-06-30 04:40:03,431 - Starting create_booking with args: (User(name='\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', role='customer', email='lavrentiemirashvili@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', model='Ferrari F40'), datetime.date(2026, 6, 30), datetime.time(5, 10), 'staff_wash'), kwargs: {}
+2026-06-30 04:40:03,439 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0077 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 04:40:03,439 - Finished create_booking
+2026-06-30 04:40:07,182 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 918258
+------------------------------
+2026-06-30 04:52:11,680 - Starting register_customer with args: ('test', 'lavrenti.emirashvili@btu.edu.ge', '555555555', 'test'), kwargs: {}
+2026-06-30 04:52:11,681 - Finished register_customer
+2026-06-30 04:52:11,693 - To: lavrenti.emirashvili@btu.edu.ge
+Subject: Verify your account
+Body: 
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color:#333;">Account Verification</h2>
+        <p>Thanks for signing up! To complete your registration, please use the verification code below:</p>
+
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 3px; padding: 10px 15px; background: #f4f4f4; display: inline-block;">
+            962016
+        </div>
+
+        <p style="margin-top:20px;">This code will expire soon. If you did not request this, you can ignore this email.</p>
+
+        <hr>
+        <p style="font-size:12px; color:#888;">If you’re having trouble, contact support.</p>
+    </div>
+    
+------------------------------
+2026-06-30 04:53:10,115 - Starting register_customer with args: ('test', 'lavrenti.emirashvili.1@btu.edu.ge', '599477813', 'Lavrenti123test'), kwargs: {}
+2026-06-30 04:53:10,115 - Finished register_customer
+2026-06-30 04:53:10,128 - To: lavrenti.emirashvili.1@btu.edu.ge
+Subject: Verify your account
+Body: 
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color:#333;">Account Verification</h2>
+        <p>Thanks for signing up! To complete your registration, please use the verification code below:</p>
+
+        <div style="font-size: 22px; font-weight: bold; letter-spacing: 3px; padding: 10px 15px; background: #f4f4f4; display: inline-block;">
+            472152
+        </div>
+
+        <p style="margin-top:20px;">This code will expire soon. If you did not request this, you can ignore this email.</p>
+
+        <hr>
+        <p style="font-size:12px; color:#888;">If you’re having trouble, contact support.</p>
+    </div>
+    
+------------------------------
+2026-06-30 05:06:58,733 - To: lavrentiemirashvili@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 488391
+------------------------------

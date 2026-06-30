@@ -6,7 +6,7 @@ Uses Models, services (with decorators), and role-based dashboards.
 import datetime
 
 from PyQt5.QtCore import Qt, QDate, QTime
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QPainter, QColor
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
@@ -125,41 +125,56 @@ def setup_app_font(app):
 class RegisterDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("რეგისტრაცია — კლიენტი")
-        self.setMinimumWidth(400)
+        self.setWindowTitle("რეგისტრაცია")
+        self.setMinimumWidth(450)
         self.setObjectName("registerDialog")
-        self.result_customer = None
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(32, 32, 32, 32)
+        layout.setSpacing(24)
 
-        layout = QFormLayout(self)
-        layout.setContentsMargins(28, 28, 28, 28)
-        layout.setSpacing(14)
+        title = QLabel("ახალი ანგარიშის შექმნა")
+        title.setStyleSheet("font-size: 22px; font-weight: bold; margin-bottom: 8px;")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+
+        form_widget = QWidget()
+        form = QFormLayout(form_widget)
+        form.setSpacing(16)
+        
         self.name_edit = QLineEdit()
+        self.name_edit.setPlaceholderText("თქვენი სახელი")
         self.email_edit = QLineEdit()
+        self.email_edit.setPlaceholderText("email@example.com")
         self.phone_edit = QLineEdit()
         self.phone_edit.setPlaceholderText("555123456")
         self.password_edit = QLineEdit()
         self.password_edit.setEchoMode(QLineEdit.Password)
+        self.password_edit.setPlaceholderText("••••••••")
         
         self.enable_2fa_cb = QComboBox()
         self.enable_2fa_cb.addItems(["არა", "დიახ"])
 
-        layout.addRow("სახელი:", self.name_edit)
-        layout.addRow("ელფოსტა:", self.email_edit)
-        layout.addRow("ტელეფონი:", self.phone_edit)
-        layout.addRow("პაროლი:", self.password_edit)
-        layout.addRow("2FA-ს ჩართვა:", self.enable_2fa_cb)
+        form.addRow("სახელი:", self.name_edit)
+        form.addRow("ელფოსტა:", self.email_edit)
+        form.addRow("ტელეფონი:", self.phone_edit)
+        form.addRow("პაროლი:", self.password_edit)
+        form.addRow("2FA-ს ჩართვა:", self.enable_2fa_cb)
+        layout.addWidget(form_widget)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addRow(buttons)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("რეგისტრაცია")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("გაუქმება")
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
 
     def get_data(self):
         return (
             self.name_edit.text().strip(),
             self.email_edit.text().strip(),
             self.phone_edit.text().strip(),
-            self.password_edit.text(),
+            self.password_edit.text().strip(),
             self.enable_2fa_cb.currentText() == "დიახ"
         )
 
@@ -167,18 +182,44 @@ class RegisterDialog(QDialog):
 class VerificationDialog(QDialog):
     def __init__(self, email, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("ელ-ფოსტის ვერიფიკაცია")
-        self.setMinimumWidth(300)
+        self.setWindowTitle("ვერიფიკაცია")
+        self.setMinimumWidth(380)
+        
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(f"კოდი გაეგზავნა: {email}"))
+        layout.setContentsMargins(35, 35, 35, 35)
+        layout.setSpacing(24)
+
+        title = QLabel("🔐 ვერიფიკაცია")
+        title.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_TEXT};")
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+
+        info = QLabel(f"დადასტურების კოდი გაეგზავნა ელ-ფოსტაზე:\n<b>{email}</b>")
+        info.setWordWrap(True)
+        info.setAlignment(Qt.AlignCenter)
+        info.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 14px;")
+        layout.addWidget(info)
+
         self.code_edit = QLineEdit()
-        self.code_edit.setPlaceholderText("შეიყვანეთ 6-ნიშნა კოდი")
+        self.code_edit.setPlaceholderText("000000")
+        self.code_edit.setAlignment(Qt.AlignCenter)
+        self.code_edit.setStyleSheet(f"""
+            font-size: 28px; 
+            letter-spacing: 8px; 
+            font-weight: bold; 
+            padding: 15px;
+            background-color: {COLOR_BG};
+            border: 2px solid {COLOR_BORDER};
+        """)
+        self.code_edit.setMaxLength(6)
         layout.addWidget(self.code_edit)
         
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("დადასტურება")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("გაუქმება")
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
 
     def get_code(self):
         return self.code_edit.text().strip()
@@ -187,31 +228,43 @@ class PasswordRecoveryDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("პაროლის აღდგენა")
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(400)
         self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(35, 35, 35, 35)
+        self.layout.setSpacing(20)
+
+        title = QLabel("🔑 პაროლის აღდგენა")
+        title.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {COLOR_TEXT};")
+        title.setAlignment(Qt.AlignCenter)
+        self.layout.addWidget(title)
         
         self.email_edit = QLineEdit()
-        self.email_edit.setPlaceholderText("შეიყვანეთ თქვენი ელ-ფოსტა")
+        self.email_edit.setPlaceholderText("თქვენი ელ-ფოსტა")
         self.layout.addWidget(QLabel("ელ-ფოსტა:"))
         self.layout.addWidget(self.email_edit)
         
-        self.send_btn = QPushButton("კოდის გაგზავნა")
+        self.send_btn = QPushButton("🚀 კოდის გაგზავნა")
+        self.send_btn.setObjectName("primaryBtn")
         self.layout.addWidget(self.send_btn)
         
+        self.recovery_form = QWidget()
+        self.recovery_layout = QFormLayout(self.recovery_form)
+        self.recovery_layout.setSpacing(15)
+        
         self.code_edit = QLineEdit()
-        self.code_edit.setPlaceholderText("აღდგენის კოდი")
+        self.code_edit.setPlaceholderText("6-ნიშნა კოდი")
         self.new_pass_edit = QLineEdit()
         self.new_pass_edit.setEchoMode(QLineEdit.Password)
         self.new_pass_edit.setPlaceholderText("ახალი პაროლი")
         
-        self.recovery_form = QWidget()
-        self.recovery_layout = QFormLayout(self.recovery_form)
         self.recovery_layout.addRow("კოდი:", self.code_edit)
         self.recovery_layout.addRow("ახალი პაროლი:", self.new_pass_edit)
         self.recovery_form.setVisible(False)
         self.layout.addWidget(self.recovery_form)
         
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("პაროლის შეცვლა")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("გაუქმება")
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         self.buttons.button(QDialogButtonBox.Ok).setEnabled(False)
@@ -234,12 +287,12 @@ class LoginPage(QWidget):
         card_layout.setContentsMargins(40, 40, 40, 40)
         card_layout.setSpacing(18)
 
-        title = QLabel("Car Wash")
+        title = QLabel("✨ Car Wash ✨")
         title.setObjectName("appTitle")
         title.setAlignment(Qt.AlignCenter)
         card_layout.addWidget(title)
 
-        subtitle = QLabel("ავტომრეცხის ჯავშნის სისტემა")
+        subtitle = QLabel("პრემიუმ ავტომრეცხის სერვისი")
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setObjectName("subtitle")
         card_layout.addWidget(subtitle)
@@ -286,8 +339,10 @@ class LoginPage(QWidget):
         layout.addWidget(card, alignment=Qt.AlignCenter)
 
     def _login(self):
+        email = self.email_edit.text().strip()
+        password = self.password_edit.text().strip()
         try:
-            user = self.store.login(self.email_edit.text(), self.password_edit.text())
+            user = self.store.login(email, password)
             if user:
                 if user.is_2fa_enabled:
                     initiate_2fa(user)
@@ -387,7 +442,7 @@ class CustomerDashboard(QWidget):
         self.cars_table = self._make_table(["სანომრე", "მოდელი", "ფერი"])
         cars_layout.addWidget(self.cars_table)
 
-        add_group = QGroupBox("მანქანის დამატება")
+        add_group = QGroupBox("🚗 მანქანის დამატება")
         add_form = QFormLayout(add_group)
         self.plate_edit = QLineEdit()
         self.plate_edit.setPlaceholderText("AA-123-BB")
@@ -396,11 +451,11 @@ class CustomerDashboard(QWidget):
         add_form.addRow("სანომრე:", self.plate_edit)
         add_form.addRow("მოდელი:", self.model_edit)
         add_form.addRow("ფერი:", self.color_edit)
-        add_btn = QPushButton("დამატება")
+        add_btn = QPushButton("➕ დამატება")
         add_btn.clicked.connect(self._add_car)
         add_form.addRow(add_btn)
         cars_layout.addWidget(add_group)
-        tabs.addTab(cars_tab, "მანქანები")
+        tabs.addTab(cars_tab, "🚗 მანქანები")
 
         # --- Booking tab ---
         book_tab = QWidget()
@@ -418,9 +473,9 @@ class CustomerDashboard(QWidget):
             self.type_combo.addItem(label, key)
         self.district_filter = QLineEdit()
         self.district_filter.setPlaceholderText("მაგ: საბურთალო")
-        filter_btn = QPushButton("ფილტრი რაიონით")
+        filter_btn = QPushButton("🔍 ფილტრი რაიონით")
         filter_btn.clicked.connect(self._filter_stations)
-        self_service_btn = QPushButton("მხოლოდ თვითმომსახურება")
+        self_service_btn = QPushButton("🧼 მხოლოდ თვითმომსახურება")
         self_service_btn.clicked.connect(self._filter_self_service)
 
         book_form.addRow("სადგური:", self.station_combo)
@@ -433,12 +488,12 @@ class CustomerDashboard(QWidget):
         book_form.addRow(self_service_btn)
         book_layout.addLayout(book_form)
 
-        book_btn = QPushButton("ჯავშნის შექმნა")
+        book_btn = QPushButton("✨ ჯავშნის შექმნა")
         book_btn.setObjectName("primaryBtn")
         book_btn.clicked.connect(self._create_booking)
         book_layout.addWidget(book_btn)
         book_layout.addStretch()
-        tabs.addTab(book_tab, "ახალი ჯავშანი")
+        tabs.addTab(book_tab, "📅 ახალი ჯავშანი")
 
         # --- Upcoming tab ---
         upcoming_tab = QWidget()
@@ -447,10 +502,10 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "დრო", "ტიპი", "სტატუსი", "ფასი"]
         )
         upcoming_layout.addWidget(self.upcoming_table)
-        cancel_btn = QPushButton("არჩეული ჯავშნის გაუქმება")
+        cancel_btn = QPushButton("❌ არჩეული ჯავშნის გაუქმება")
         cancel_btn.clicked.connect(self._cancel_booking)
         upcoming_layout.addWidget(cancel_btn)
-        tabs.addTab(upcoming_tab, "მომავალი")
+        tabs.addTab(upcoming_tab, "⏳ მომავალი")
 
         # --- History tab ---
         history_tab = QWidget()
@@ -459,7 +514,7 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "ტიპი", "ფასი"]
         )
         history_layout.addWidget(self.history_table)
-        tabs.addTab(history_tab, "ისტორია")
+        tabs.addTab(history_tab, "📜 ისტორია")
 
         layout.addWidget(tabs)
 
@@ -629,7 +684,7 @@ class StaffDashboard(QWidget):
         self.header.setWordWrap(True)
         layout.addWidget(self.header)
 
-        stats_group = QGroupBox("სტატისტიკა")
+        stats_group = QGroupBox("📊 სტატისტიკა")
         stats_layout = QFormLayout(stats_group)
         self.daily_count_label = QLabel("0")
         stats_layout.addRow("დღევანდელი ჯავშნები:", self.daily_count_label)
@@ -642,7 +697,7 @@ class StaffDashboard(QWidget):
         configure_table(self.bookings_table)
         layout.addWidget(self.bookings_table)
 
-        complete_btn = QPushButton("არჩეული ჯავშნის დასრულება")
+        complete_btn = QPushButton("✅ არჩეული ჯავშნის დასრულება")
         complete_btn.setObjectName("primaryBtn")
         complete_btn.clicked.connect(self._complete_booking)
         layout.addWidget(complete_btn)
@@ -729,7 +784,7 @@ class AdminDashboard(QWidget):
         )
         configure_table(self.stations_table)
         stations_layout.addWidget(self.stations_table)
-        tabs.addTab(stations_tab, "სადგურები")
+        tabs.addTab(stations_tab, "🏢 სადგურები")
 
         # All bookings
         bookings_tab = QWidget()
@@ -740,7 +795,7 @@ class AdminDashboard(QWidget):
         )
         configure_table(self.bookings_table)
         bookings_layout.addWidget(self.bookings_table)
-        tabs.addTab(bookings_tab, "ყველა ჯავშანი")
+        tabs.addTab(bookings_tab, "📅 ყველა ჯავშანი")
 
         # Staff management
         staff_tab = QWidget()
@@ -761,12 +816,12 @@ class AdminDashboard(QWidget):
         form.addRow("პაროლი:", self.staff_password)
         form.addRow("სადგური:", self.staff_station)
         staff_layout.addLayout(form)
-        add_staff_btn = QPushButton("პერსონალის დამატება")
+        add_staff_btn = QPushButton("➕ პერსონალის დამატება")
         add_staff_btn.setObjectName("primaryBtn")
         add_staff_btn.clicked.connect(self._add_staff)
         staff_layout.addWidget(add_staff_btn)
         staff_layout.addStretch()
-        tabs.addTab(staff_tab, "პერსონალი")
+        tabs.addTab(staff_tab, "👥 პერსონალი")
 
         layout.addWidget(tabs)
 
@@ -816,7 +871,7 @@ class AdminDashboard(QWidget):
                 self.staff_name.text().strip(),
                 self.staff_email.text().strip(),
                 self.staff_phone.text().strip(),
-                self.staff_password.text(),
+                self.staff_password.text().strip(),
                 self.staff_station.currentData(),
             )
             self.staff_name.clear()
@@ -828,12 +883,31 @@ class AdminDashboard(QWidget):
             show_error(self, "პერსონალი", exc)
 
 
+def create_app_icon():
+    pixmap = QPixmap(64, 64)
+    pixmap.fill(Qt.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.Antialiasing)
+    painter.setBrush(QColor(COLOR_ACCENT))
+    painter.setPen(Qt.NoPen)
+    painter.drawRoundedRect(0, 0, 64, 64, 16, 16)
+    painter.setPen(QColor(COLOR_BG))
+    font = painter.font()
+    font.setBold(True)
+    font.setPointSize(24)
+    painter.setFont(font)
+    painter.drawText(pixmap.rect(), Qt.AlignCenter, "CW")
+    painter.end()
+    return QIcon(pixmap)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, store: AppStore):
         super().__init__()
         self.store = store
-        self.setWindowTitle("Car Wash — PyQt5")
-        self.resize(960, 640)
+        self.setWindowTitle("Car Wash — Premium Management")
+        self.setWindowIcon(create_app_icon())
+        self.resize(1100, 720)
 
         central = QWidget()
         central.setObjectName("centralWidget")
@@ -875,7 +949,7 @@ class MainWindow(QMainWindow):
 
     def _apply_styles(self):
         self.setStyleSheet(f"""
-            QMainWindow, #centralWidget {{
+            QMainWindow, #centralWidget, QDialog {{
                 background-color: {COLOR_BG};
                 color: {COLOR_TEXT};
                 font-family: {FONT_FAMILY};
@@ -1106,6 +1180,31 @@ class MainWindow(QMainWindow):
             QDialogButtonBox QPushButton {{
                 min-width: 96px;
                 min-height: 42px;
+            }}
+
+            QTabWidget::pane {{
+                border: 1px solid {COLOR_BORDER};
+                border-radius: 12px;
+                top: -1px;
+                background-color: {COLOR_SURFACE};
+                padding: 10px;
+            }}
+
+            QTabBar::tab {{
+                background-color: {COLOR_BG};
+                color: {COLOR_TEXT_MUTED};
+                padding: 10px 20px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                margin-right: 4px;
+                border: 1px solid {COLOR_BORDER};
+                border-bottom: none;
+            }}
+
+            QTabBar::tab:selected {{
+                background-color: {COLOR_SURFACE};
+                color: {COLOR_TEXT};
+                font-weight: bold;
             }}
         """)
 
