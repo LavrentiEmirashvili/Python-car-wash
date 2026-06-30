@@ -1,0 +1,19 @@
+Login Page:
+1. make authorization box wider
+2. make email and password boxes longer and and thinner.
+3. improve visibility on white on white text surfaces
+Main page nav bar:
+1. On the top bar add a hamburger dropdown menu on the left side. after clicking the menu 4 centered sidenav buttons should appear: "მთავარი გვერდი", "ჩემი მანქანები", "ახალი ჯავშნის შექმნა", "მომავალი ჯავშნები", "ჯავშნების ისტორია".
+2. on the oposite side of navbar should be the profile name as a link to the profile page, profile icon/photo and exit buttons.
+main page:
+1. the main page should include a detailed dashboard about loyalty points progression, balance and
+ brief information about upcoming bookings.
+cars page:
+1. cars page should show listings of all owned cars. make sure to center the table accurately. make the table contents have alternating colours (for example first item background dark, second item background lighter and so on.)add a small button next to each car to delete the information about that car( it should also have a confirmation popup for deletion.)
+2. separate the cars make and model into separate data.
+bookings
+1. add 15-20 "realistic" stations for car wash.
+2. improve the filter by region function
+3. fix the book button for better visibility and functionality
+4. add a function that checks the time of booking so that it cannot be booked in the past.
+

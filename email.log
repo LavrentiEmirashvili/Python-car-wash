@@ -110,3 +110,15 @@ Body: Your 2FA login code is: 776192
 Subject: 2FA Login Code
 Body: Your 2FA login code is: 343581
 ------------------------------
+2026-06-30 14:38:17,898 - INFO - To: aleksandra.liza.khakishvili@ciu.edu.ge
+Subject: Account Verification Code
+Body: Your verification code is: 000140
+------------------------------
+2026-06-30 14:41:57,978 - INFO - To: Aleksandra.liza.khakhishvili@ciu.edu.ge
+Subject: Account Verification Code
+Body: Your verification code is: 061016
+------------------------------
+2026-06-30 14:43:31,271 - INFO - To: Aleksandra.liza.khakhishvili@ciu.edu.ge
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 710517
+------------------------------

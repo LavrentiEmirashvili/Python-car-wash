@@ -75,9 +75,9 @@ COLOR_ACCENT_TEXT = "#121212"
 COLOR_HOVER = "#333333"
 
 FONT_FAMILY = '"Noto Sans Georgian", "Segoe UI Variable", "Segoe UI", sans-serif'
-FONT_SIZE_BASE = 15
-FONT_SIZE_SMALL = 13
-FONT_SIZE_TITLE = 30
+FONT_SIZE_BASE = 14
+FONT_SIZE_SMALL = 12
+FONT_SIZE_TITLE = 25
 
 BOOKING_TYPE_LABELS = {
     "staff_wash": "პერსონალის რეცხვა (25₾)",

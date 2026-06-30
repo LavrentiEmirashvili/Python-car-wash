@@ -225,3 +225,30 @@ Body: Your 2FA login code is: 776192
 Subject: 2FA Login Code
 Body: Your 2FA login code is: 343581
 ------------------------------
+2026-06-30 14:37:40,024 - Starting register_customer with args: ('test 1', 'aleksandra.liza.khakishvili@ciu.edu.ge', '444444444', 'test1'), kwargs: {}
+2026-06-30 14:38:17,873 - Starting register_customer with args: ('test 1', 'aleksandra.liza.khakishvili@ciu.edu.ge', '555123456', 'test1'), kwargs: {}
+2026-06-30 14:38:17,874 - Finished register_customer
+2026-06-30 14:38:17,898 - To: aleksandra.liza.khakishvili@ciu.edu.ge
+Subject: Account Verification Code
+Body: Your verification code is: 000140
+------------------------------
+2026-06-30 14:41:57,970 - Starting register_customer with args: ('test1', 'Aleksandra.liza.khakhishvili@ciu.edu.ge', '555555555', 'test1'), kwargs: {}
+2026-06-30 14:41:57,970 - Finished register_customer
+2026-06-30 14:41:57,978 - To: Aleksandra.liza.khakhishvili@ciu.edu.ge
+Subject: Account Verification Code
+Body: Your verification code is: 061016
+------------------------------
+2026-06-30 14:43:31,271 - To: Aleksandra.liza.khakhishvili@ciu.edu.ge
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 710517
+------------------------------
+2026-06-30 19:31:05,069 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), 'aa-123-bb', 'test', 'white'), kwargs: {}
+2026-06-30 19:31:05,079 - Finished register_car
+2026-06-30 19:31:10,867 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AA-123-BB', model='test'), datetime.date(2026, 6, 30), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-06-30 19:31:10,885 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0166 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 19:31:10,885 - Finished create_booking
+2026-06-30 19:31:25,919 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AA-123-BB', model='test'), datetime.date(2026, 6, 30), datetime.time(20, 8), 'staff_wash'), kwargs: {}
+2026-06-30 19:31:25,932 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0123 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-06-30 19:31:25,932 - Finished create_booking
+2026-06-30 19:31:30,340 - Starting cancel_booking with args: (Booking(customer='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', date=datetime.date(2026, 6, 30), status='confirmed'),), kwargs: {}
+2026-06-30 19:31:30,353 - Finished cancel_booking
