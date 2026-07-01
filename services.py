@@ -1,29 +1,3 @@
-# import datetime
-# from Models import Admin, Staff, Customer, Car, Station, Booking
-# from decorators import log_action, require_role, validate_email, validate_phone, validate_plate, timer
-#
-#
-# SERVICE_PRICES = {
-#     "staff_wash": 25.0,
-#     "self_service": 12.0,
-# }
-#
-# LOYALTY_DISCOUNT_AFTER_YEARS = 0.5    # 6 months, since your years_as_customer() returns a float
-# LOYALTY_DISCOUNT_RATE = 0.10          # 10%
-# LATE_CANCEL_FEE = 5.0
-#
-#
-#
-# def calculate_booking_price(booking):
-#     base_price = SERVICE_PRICES[booking.booking_type]
-#     customer = booking.customer
-#
-#     if customer.years_as_customer() >= LOYALTY_DISCOUNT_AFTER_YEARS:
-#         discount = base_price * LOYALTY_DISCOUNT_RATE
-#         base_price -= discount
-#
-#     return round(base_price, 2)
-
 
 """
 services.py
@@ -199,6 +173,17 @@ def create_booking(customer, station, car, date, time, booking_type):
     if not station.is_available(date, time):
         raise ValueError("ეს დროის სლოტი დაკავებულია, აირჩიეთ სხვა დრო")
 
+    price = calculate_booking_price(Booking(
+        customer=customer,
+        station=station,
+        car=car,
+        date=date,
+        time=time,
+        booking_type=booking_type,
+    ))
+    if customer.balance < price:
+        raise ValueError("ბალანსი არასაკმარისია ჯავშნის créationთვის")
+
     booking = Booking(
         customer=customer,
         station=station,
@@ -210,9 +195,6 @@ def create_booking(customer, station, car, date, time, booking_type):
 
     station.add_booking(booking)
     booking.confirm()
-
-    # Calculate price BEFORE earning new points so discount uses current tier
-    price = calculate_booking_price(booking)
 
     # Earn points and deduct balance
     customer.points += 10  # +10 per reservation

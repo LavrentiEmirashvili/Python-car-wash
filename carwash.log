@@ -261,3 +261,47 @@ Body: Your 2FA login code is: 710517
 2026-07-01 20:38:46,370 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10d5\u10d0\u10e0\u10d9\u10d4\u10d7\u10d8\u10da\u10d8', district='\u10d5\u10d0\u10e0\u10d9\u10d4\u10d7\u10d8\u10da\u10d8'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2027, 7, 2), datetime.time(11, 0), 'self_service'), kwargs: {}
 2026-07-01 20:38:46,380 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0104 \u10ec\u10d0\u10db\u10e8\u10d8.
 2026-07-01 20:38:46,380 - Finished create_booking
+2026-07-01 20:58:35,966 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2026, 7, 1), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-07-01 20:58:45,726 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2026, 7, 2), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-07-01 20:58:45,737 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0101 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-07-01 20:58:45,737 - Finished create_booking
+2026-07-01 20:59:52,350 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd', district='\u10e1\u10d0\u10d1\u10e3\u10e0\u10d7\u10d0\u10da\u10dd'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2026, 7, 1), datetime.time(22, 0), 'staff_wash'), kwargs: {}
+2026-07-01 20:59:52,360 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0099 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-07-01 20:59:52,360 - Finished create_booking
+2026-07-01 21:40:46,971 - Starting register_car with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), '', '', '', ''), kwargs: {}
+2026-07-01 21:40:46,976 - Finished register_car
+2026-07-01 21:45:57,052 - Starting register_customer with args: ('\u10da\u10d0\u10d5\u10e0\u10d4\u10dc\u10e2\u10d8 \u10d4\u10db\u10d8\u10e0\u10d0\u10e8\u10d5\u10d8\u10da\u10d8', 'emirashvililavrenti@gmail.com', '555000999', 'testi'), kwargs: {}
+2026-07-01 21:45:57,054 - Finished register_customer
+2026-07-01 21:45:57,061 - To: emirashvililavrenti@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 559671
+------------------------------
+2026-07-01 21:47:05,796 - To: emirashvililavrenti@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 220984
+------------------------------
+2026-07-01 21:50:51,071 - Starting register_customer with args: ('lavrenti emirashvili', 'lavrentiemirashvili1@gmail.com', '555999888', 'testi'), kwargs: {}
+2026-07-01 21:50:51,072 - Finished register_customer
+2026-07-01 21:50:51,082 - To: lavrentiemirashvili1@gmail.com
+Subject: Account Verification Code
+Body: Your verification code is: 908333
+------------------------------
+2026-07-01 21:51:28,417 - To: lavrentiemirashvili1@gmail.com
+Subject: 2FA Login Code
+Body: Your 2FA login code is: 806002
+------------------------------
+2026-07-01 21:52:40,025 - Starting register_car with args: (User(name='lavrenti emirashvili', role='customer', email='lavrentiemirashvili1@gmail.com'), 'aa-123-bb', 'toyota', 'camry', '\u10d7\u10d4\u10d7\u10e0\u10d8'), kwargs: {}
+2026-07-01 21:52:40,033 - Finished register_car
+2026-07-01 21:53:28,186 - Starting create_booking with args: (User(name='lavrenti emirashvili', role='customer', email='lavrentiemirashvili1@gmail.com'), Station(name='\u10d5\u10d0\u10e0\u10d9\u10d4\u10d7\u10d8\u10da\u10d8', district='\u10d5\u10d0\u10e0\u10d9\u10d4\u10d7\u10d8\u10da\u10d8'), Car(plate='AA-123-BB', make='toyota', model='camry'), datetime.date(2026, 7, 1), datetime.time(22, 0), 'self_service'), kwargs: {}
+2026-07-01 21:53:28,196 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0091 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-07-01 21:53:28,196 - Finished create_booking
+2026-07-01 22:16:10,884 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10d2\u10da\u10d3\u10d0\u10dc\u10d8', district='\u10d2\u10da\u10d3\u10d0\u10dc\u10d8'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2026, 7, 1), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-07-01 22:16:15,787 - Starting cancel_booking with args: (Booking(customer='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', date=datetime.date(2026, 7, 2), status='confirmed'),), kwargs: {}
+2026-07-01 22:16:15,792 - Finished cancel_booking
+2026-07-01 22:17:13,682 - Starting cancel_booking with args: (Booking(customer='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', date=datetime.date(2027, 7, 2), status='confirmed'),), kwargs: {}
+2026-07-01 22:17:13,688 - Finished cancel_booking
+2026-07-01 22:18:56,627 - Starting create_booking with args: (User(name='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', role='customer', email='giorgi@gmail.com'), Station(name='\u10d8\u10e1\u10d0\u10dc\u10d8', district='\u10d8\u10e1\u10d0\u10dc\u10d8'), Car(plate='AB-567-CD', make='Toyota', model='Camry'), datetime.date(2026, 7, 2), datetime.time(10, 0), 'staff_wash'), kwargs: {}
+2026-07-01 22:18:56,637 - \u10e4\u10e3\u10dc\u10e5\u10ea\u10d8\u10d0 'create_booking' \u10e8\u10d4\u10e1\u10e0\u10e3\u10da\u10d3\u10d0 0.0095 \u10ec\u10d0\u10db\u10e8\u10d8.
+2026-07-01 22:18:56,637 - Finished create_booking
+2026-07-01 22:25:10,470 - Starting cancel_booking with args: (Booking(customer='\u10d2\u10d8\u10dd\u10e0\u10d2\u10d8', date=datetime.date(2026, 7, 2), status='confirmed'),), kwargs: {}
+2026-07-01 22:25:10,475 - Finished cancel_booking

@@ -182,6 +182,36 @@ def setup_app_font(app):
     return font
 
 
+class BalanceRefillDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("ბალანსის შევსება")
+        self.setMinimumWidth(320)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+
+        title = QLabel("შეიყვანეთ რიცხვი ლარებში")
+        title.setStyleSheet("font-size: 16px; font-weight: bold;")
+        layout.addWidget(title)
+
+        self.amount_edit = QLineEdit()
+        self.amount_edit.setPlaceholderText("0.00")
+        self.amount_edit.setMinimumHeight(42)
+        layout.addWidget(self.amount_edit)
+
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("შევსება")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("გაუქმება")
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+    def get_amount(self):
+        return self.amount_edit.text().strip()
+
+
 class RegisterDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -536,6 +566,10 @@ class CustomerDashboard(QWidget):
         summary_layout.addWidget(self.tier_value, 2, 1)
         summary_layout.addWidget(QLabel("მომავალი ჯავშნები:"), 0, 2, 1, 2)
         summary_layout.addWidget(self.upcoming_preview, 1, 2, 2, 2)
+        self.refill_btn = QPushButton("ბალანსის შევსება")
+        self.refill_btn.setObjectName("logout_btn")
+        self.refill_btn.clicked.connect(self._refill_balance)
+        summary_layout.addWidget(self.refill_btn, 3, 0, 1, 3)
         header_card_layout.addWidget(summary_card)
 
         # Loyalty Area
@@ -553,7 +587,7 @@ class CustomerDashboard(QWidget):
         # --- Cars tab ---
         cars_tab = QWidget()
         cars_layout = QVBoxLayout(cars_tab)
-        self.cars_table = self._make_table(["სანომრე", "მწარმოებელი", "მოდელი", "ფერი", ""])
+        self.cars_table = self._make_table(["სანომრე", "მწარმოებელი", "მოდელი", "ფერი", "ქმედება"])
         cars_layout.addWidget(self.cars_table)
 
         add_group = QGroupBox("მანქანის დამატება")
@@ -570,8 +604,8 @@ class CustomerDashboard(QWidget):
         add_form.addRow("მწარმოებელი:", self.make_edit)
         add_form.addRow("მოდელი:", self.model_edit)
         add_form.addRow("ფერი:", self.color_edit)
-        add_btn = QPushButton("➕ დამატება")
-        add_btn.setObjectName("primaryBtn")
+        add_btn = QPushButton("მანქანის დამატება")
+        add_btn.setObjectName("logout_btn")
         add_btn.clicked.connect(self._add_car)
         add_form.addRow(add_btn)
         cars_layout.addWidget(add_group)
@@ -622,7 +656,7 @@ class CustomerDashboard(QWidget):
         upcoming_tab = QWidget()
         upcoming_layout = QVBoxLayout(upcoming_tab)
         self.upcoming_table = self._make_table(
-            ["სადგური", "მანქანა", "თარიღი", "დრო", "ტიპი", "სტატუსი", "ფასი"]
+            ["სადგური", "მანქანა", "თარიღი", "დრო", "ტიპი", "სტატუსი", "ფასი", "ქმედება"]
         )
         upcoming_layout.addWidget(self.upcoming_table)
         self._tab_indices["upcoming"] = self.tabs.count()
@@ -645,8 +679,37 @@ class CustomerDashboard(QWidget):
     def _make_table(self, headers):
         table = QTableWidget(0, len(headers))
         table.setHorizontalHeaderLabels(headers)
+        table.horizontalHeader().setStretchLastSection(True)
         configure_table(table)
         return table
+
+    def _refill_balance(self):
+        user = self.store.current_user
+        if not user:
+            return
+
+        dialog = BalanceRefillDialog(self)
+        if dialog.exec_() != QDialog.Accepted:
+            return
+
+        try:
+            amount = float(dialog.get_amount().replace(",", "."))
+        except ValueError:
+            show_error(self, "ბალანსი", ValueError("შეიყვანეთ სწორი რიცხვი"))
+            return
+
+        if amount <= 0:
+            show_error(self, "ბალანსი", ValueError("რიცხვი უნდა იყოს დადებითი"))
+            return
+
+        user.balance += amount
+        database.save_user(user)
+        self.refresh()
+        show_info(self, "ბალანსი", f"ბალანსი წარმატებით შევსდა: {amount:.2f}₾")
+
+        win = self.window()
+        if hasattr(win, "_refresh_top_bar_user"):
+            win._refresh_top_bar_user()
 
     def refresh(self):
         user = self.store.current_user
@@ -655,7 +718,7 @@ class CustomerDashboard(QWidget):
         self.header.setText(
             f"<b>{user.name}</b> — {user.get_dashboard()}"
         )
-        self.balance_value.setText(f"{user.balance} ₾")
+        self.balance_value.setText(f"{user.balance:.2f} ₾")
         self.points_value.setText(f"{user.points} pts")
         tier, next_tier, min_pts, max_pts, current_pts = user.get_loyalty_info()
         self.tier_value.setText(f"{tier} ({current_pts}/{max_pts} pts)")
@@ -706,9 +769,11 @@ class CustomerDashboard(QWidget):
             self.cars_table.setItem(row, 2, QTableWidgetItem(car.model))
             self.cars_table.setItem(row, 3, QTableWidgetItem(car.color))
 
-            delete_btn = QPushButton("🗑")
+            delete_btn = QPushButton("წაშლა")
             delete_btn.setToolTip("მანქანის წაშლა")
-            delete_btn.setObjectName("secondaryBtn")
+            delete_btn.setObjectName("tableActionBtn")
+            delete_btn.setMinimumHeight(36)
+            delete_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             delete_btn.clicked.connect(lambda checked=False, plate=car.plate: self._remove_car(plate))
             self.cars_table.setCellWidget(row, 4, delete_btn)
             self.car_combo.addItem(str(car), car)
@@ -827,12 +892,20 @@ class CustomerDashboard(QWidget):
             )
             self.upcoming_table.setItem(row, 6, QTableWidgetItem(f"{price}₾"))
 
-    def _cancel_booking(self):
-        row = self.upcoming_table.currentRow()
-        if row < 0 or row >= len(self._upcoming_bookings):
-            show_error(self, "გაუქმება", ValueError("აირჩიეთ ჯავშანი"))
-            return
-        booking = self._upcoming_bookings[row]
+            cancel_btn = QPushButton("გაუქმება")
+            cancel_btn.setObjectName("tableActionBtn")
+            cancel_btn.setMinimumHeight(32)
+            cancel_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            cancel_btn.clicked.connect(lambda checked=False, booking=booking: self._cancel_booking(booking))
+            self.upcoming_table.setCellWidget(row, 7, cancel_btn)
+
+    def _cancel_booking(self, booking=None):
+        if booking is None:
+            row = self.upcoming_table.currentRow()
+            if row < 0 or row >= len(self._upcoming_bookings):
+                show_error(self, "გაუქმება", ValueError("აირჩიეთ ჯავშანი"))
+                return
+            booking = self._upcoming_bookings[row]
         try:
             fee = cancel_booking(booking)
             msg = "ჯავშანი გაუქმებულია"
@@ -987,7 +1060,8 @@ class AdminDashboard(QWidget):
         self.header.setWordWrap(True)
         layout.addWidget(self.header)
 
-        tabs = QTabWidget()
+        self.tabs = QTabWidget()
+        self._tab_indices = {}
 
         # Stations overview
         stations_tab = QWidget()
@@ -998,7 +1072,8 @@ class AdminDashboard(QWidget):
         )
         configure_table(self.stations_table)
         stations_layout.addWidget(self.stations_table)
-        tabs.addTab(stations_tab, "🏢 სადგურები")
+        self._tab_indices["stations"] = self.tabs.count()
+        self.tabs.addTab(stations_tab, "🏢 სადგურები")
 
         # All bookings
         bookings_tab = QWidget()
@@ -1009,7 +1084,8 @@ class AdminDashboard(QWidget):
         )
         configure_table(self.bookings_table)
         bookings_layout.addWidget(self.bookings_table)
-        tabs.addTab(bookings_tab, "ყველა ჯავშანი")
+        self._tab_indices["bookings"] = self.tabs.count()
+        self.tabs.addTab(bookings_tab, "ყველა ჯავშანი")
 
         # Staff management
         staff_tab = QWidget()
@@ -1035,12 +1111,17 @@ class AdminDashboard(QWidget):
         add_staff_btn.clicked.connect(self._add_staff)
         staff_layout.addWidget(add_staff_btn)
         staff_layout.addStretch()
-        tabs.addTab(staff_tab, "პერსონალი")
+        self._tab_indices["staff"] = self.tabs.count()
+        self.tabs.addTab(staff_tab, "პერსონალი")
 
-        layout.addWidget(tabs)
+        layout.addWidget(self.tabs)
         
         scroll.setWidget(container)
         main_layout.addWidget(scroll)
+
+    def show_tab(self, tab_key):
+        if tab_key in self._tab_indices:
+            self.tabs.setCurrentIndex(self._tab_indices[tab_key])
 
     def refresh(self):
         user = self.store.current_user
@@ -1424,22 +1505,8 @@ class MainWindow(QMainWindow):
         nav_layout.setContentsMargins(12, 12, 12, 12)
         nav_layout.setSpacing(10)
         self.nav_buttons = []
-        for label, action in [
-            ("მთავარი გვერდი", "home"),
-            ("ჩემი მანქანები", "cars"),
-            ("ახალი ჯავშნის შექმნა", "booking"),
-            ("მომავალი ჯავშნები", "upcoming"),
-            ("ჯავშნების ისტორია", "history"),
-        ]:
-            btn = QPushButton(label)
-            btn.setObjectName("navBtn")
-            btn.setMinimumHeight(42)
-            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            btn.clicked.connect(lambda checked=False, key=action: self._handle_nav_action(key))
-            nav_layout.addWidget(btn)
-            self.nav_buttons.append(btn)
-        nav_layout.addStretch()
         content_layout.addWidget(self.side_nav_frame, 0, Qt.AlignLeft)
+        self._build_side_nav()
 
         self.stack = QStackedWidget()
         self.login_page = LoginPage(store, self._on_login)
@@ -1459,6 +1526,56 @@ class MainWindow(QMainWindow):
         self._apply_styles()
         self.top_bar_frame.hide()
         self.stack.setCurrentWidget(self.login_page)
+
+    def _build_side_nav(self):
+        if not hasattr(self, "side_nav_frame"):
+            return
+
+        nav_layout = self.side_nav_frame.layout()
+        while nav_layout.count():
+            item = nav_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        self.nav_buttons = []
+        user = self.store.current_user
+        if not user:
+            return
+
+        menu_items = []
+        if user.role == "customer":
+            menu_items = [
+                ("მთავარი გვერდი", "home"),
+                ("ჩემი მანქანები", "cars"),
+                ("ახალი ჯავშნის შექმნა", "booking"),
+                ("მომავალი ჯავშნები", "upcoming"),
+                ("ჯავშნების ისტორია", "history"),
+            ]
+        elif user.role == "staff":
+            menu_items = [
+                ("დღევანდელი ჯავშნები", "staff_dashboard"),
+                ("მომლოდინე დავალებები", "staff_bookings"),
+                ("პროფილი", "profile"),
+            ]
+        elif user.role == "admin":
+            menu_items = [
+                ("დაფა", "admin_dashboard"),
+                ("სადგურების მართვა", "admin_stations"),
+                ("პერსონალის მართვა", "admin_staff"),
+                ("სტატისტიკა", "admin_stats"),
+                ("პროფილი", "profile"),
+            ]
+
+        for label, action in menu_items:
+            btn = QPushButton(label)
+            btn.setObjectName("navBtn")
+            btn.setMinimumHeight(42)
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            btn.clicked.connect(lambda checked=False, key=action: self._handle_nav_action(key))
+            nav_layout.addWidget(btn)
+            self.nav_buttons.append(btn)
+
+        nav_layout.addStretch()
 
     def _apply_styles(self):
         self.setStyleSheet(f"""
@@ -1574,8 +1691,21 @@ class MainWindow(QMainWindow):
                 background-color: transparent;
                 border: 1px solid {COLOR_BORDER};
             }}
-            
+
             #secondaryBtn:hover {{
+                background-color: {COLOR_ELEVATED};
+            }}
+
+            QPushButton#tableActionBtn {{
+                background-color: transparent;
+                border: 1px solid {COLOR_BORDER};
+                padding: 8px 10px;
+                border-radius: 10px;
+                min-height: 34px;
+                margin: 0;
+            }}
+
+            QPushButton#tableActionBtn:hover {{
                 background-color: {COLOR_ELEVATED};
             }}
 
@@ -1674,6 +1804,8 @@ class MainWindow(QMainWindow):
     def _on_login(self, user):
         self.store.current_user = user
         self.top_bar_frame.show()
+        self._build_side_nav()
+        self.side_nav_frame.show()
         self._refresh_top_bar_user()
 
         if user.role == "customer":
@@ -1720,21 +1852,44 @@ class MainWindow(QMainWindow):
     def _handle_nav_action(self, action):
         if not self.store.current_user:
             return
-        if action == "home":
-            self.customer_dashboard.show_tab("cars")
-            self.stack.setCurrentWidget(self.customer_dashboard)
-        elif action == "cars":
-            self.customer_dashboard.show_tab("cars")
-            self.stack.setCurrentWidget(self.customer_dashboard)
-        elif action == "booking":
-            self.customer_dashboard.show_tab("booking")
-            self.stack.setCurrentWidget(self.customer_dashboard)
-        elif action == "upcoming":
-            self.customer_dashboard.show_tab("upcoming")
-            self.stack.setCurrentWidget(self.customer_dashboard)
-        elif action == "history":
-            self.customer_dashboard.show_tab("history")
-            self.stack.setCurrentWidget(self.customer_dashboard)
+
+        user = self.store.current_user
+        if action == "profile":
+            self.profile_page.refresh()
+            self._refresh_top_bar_user()
+            self.stack.setCurrentWidget(self.profile_page)
+            return
+
+        if user.role == "customer":
+            if action == "home":
+                self.customer_dashboard.show_tab("cars")
+                self.stack.setCurrentWidget(self.customer_dashboard)
+            elif action == "cars":
+                self.customer_dashboard.show_tab("cars")
+                self.stack.setCurrentWidget(self.customer_dashboard)
+            elif action == "booking":
+                self.customer_dashboard.show_tab("booking")
+                self.stack.setCurrentWidget(self.customer_dashboard)
+            elif action == "upcoming":
+                self.customer_dashboard.show_tab("upcoming")
+                self.stack.setCurrentWidget(self.customer_dashboard)
+            elif action == "history":
+                self.customer_dashboard.show_tab("history")
+                self.stack.setCurrentWidget(self.customer_dashboard)
+        elif user.role == "staff":
+            self.staff_dashboard.refresh()
+            self.stack.setCurrentWidget(self.staff_dashboard)
+        elif user.role == "admin":
+            if action == "admin_dashboard":
+                self.admin_dashboard.show_tab("stations")
+            elif action == "admin_stations":
+                self.admin_dashboard.show_tab("stations")
+            elif action == "admin_staff":
+                self.admin_dashboard.show_tab("staff")
+            elif action == "admin_stats":
+                self.admin_dashboard.show_tab("bookings")
+            self.admin_dashboard.refresh()
+            self.stack.setCurrentWidget(self.admin_dashboard)
 
     def _refresh_top_bar_user(self):
         user = self.store.current_user
