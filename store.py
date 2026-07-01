@@ -13,41 +13,53 @@ class AppStore:
         database.init_db()
         self.users, self.stations = database.load_all_data()
         self.current_user = None
-        if not self.users:
-            self._seed()
+        self._seed_stations()
+        self._seed_users()
+        self.users, self.stations = database.load_all_data()
 
-    def _seed(self):
+    def _seed_stations(self):
         self.stations = [
             Station("საბურთალო", "ვაჟა-ფშაველას 12", "საბურთალო", has_self_service=True),
-            Station("ვაკე", "ჭავჭავაძის 5", "ვაკე", has_self_service=True),
-            Station("ისანი", "კახეთის გზატ 100", "ისანი", has_self_service=False),
+            Station("ვაკე", "ჭავჭავაძის 81", "ვაკე", has_self_service=True),
+            Station("ისანი", "ნავთლუღის 20", "ისანი", has_self_service=False),
+            Station("ვარკეთილი", "თრიალეთის 21", "ვარკეთილი", has_self_service=True),
+            Station("გლდანი", "ვეკუას 15", "გლდანი", has_self_service=True),
+            Station("ნაძალადევი", "დიმიტრი გულიაშვილის 3", "ნაძალადევი", has_self_service=True),
+            Station("სამგორი", "მეველეს 24", "სამგორი", has_self_service=True),
         ]
         for s in self.stations:
             database.save_station(s)
 
-        admin = Admin("ნიკა", "admin@carwash.ge", "555111222", "admin123")
-        admin.is_verified = True
-        database.save_user(admin)
+    def _seed_users(self):
+        if not any(getattr(u, "email", "").lower() == "admin@carwash.ge" for u in self.users):
+            admin = Admin("ნიკა", "admin@carwash.ge", "555111222", "admin123")
+            admin.is_verified = True
+            database.save_user(admin)
+            self.users.append(admin)
 
-        staff_saburtalo = Staff(
-            "ლუკა", "luka@carwash.ge", "555222333", "staff123", station_id=1
-        )
-        staff_saburtalo.is_verified = True
-        database.save_user(staff_saburtalo)
+        if not any(getattr(u, "email", "").lower() == "luka@carwash.ge" for u in self.users):
+            staff_saburtalo = Staff(
+                "ლუკა", "luka@carwash.ge", "555222333", "staff123", station_id=1
+            )
+            staff_saburtalo.is_verified = True
+            database.save_user(staff_saburtalo)
+            self.users.append(staff_saburtalo)
 
-        staff_vake = Staff(
-            "ანა", "ana@carwash.ge", "555333444", "staff123", station_id=2
-        )
-        staff_vake.is_verified = True
-        database.save_user(staff_vake)
+        if not any(getattr(u, "email", "").lower() == "ana@carwash.ge" for u in self.users):
+            staff_vake = Staff(
+                "ანა", "ana@carwash.ge", "555333444", "staff123", station_id=2
+            )
+            staff_vake.is_verified = True
+            database.save_user(staff_vake)
+            self.users.append(staff_vake)
 
-        customer = register_customer(
-            "გიორგი", "giorgi@gmail.com", "555123456", "customer123"
-        )
-        customer.is_verified = True
-        database.save_user(customer)
-
-        self.users = [admin, staff_saburtalo, staff_vake, customer]
+        if not any(getattr(u, "email", "").lower() == "giorgi@gmail.com" for u in self.users):
+            customer = register_customer(
+                "გიორგი", "giorgi@gmail.com", "555123456", "customer123"
+            )
+            customer.is_verified = True
+            database.save_user(customer)
+            self.users.append(customer)
 
     def login(self, email: str, password: str):
         email = email.strip().lower()

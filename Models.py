@@ -147,16 +147,18 @@ class Customer(User):
 
 
 class Car:
-    def __init__(self, plate, model, color):
+    def __init__(self, plate, model, color, make=""):
         self.plate = plate.upper()
         self.model = model
         self.color = color
+        self.make = make or ""
 
     def __str__(self):
-        return f"{self.plate} | {self.model} | {self.color}"
+        make_text = f"{self.make} " if self.make else ""
+        return f"{self.plate} | {make_text}{self.model} | {self.color}"
 
     def __repr__(self):
-        return f"Car(plate={self.plate!r}, model={self.model!r})"
+        return f"Car(plate={self.plate!r}, make={self.make!r}, model={self.model!r})"
 
     def __eq__(self, other):
         if not isinstance(other, Car):

@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QFrame,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -94,39 +95,36 @@ STATUS_LABELS = {
 
 def _make_circular_pixmap(src_pix: QPixmap, size: int) -> QPixmap:
     """Return a circular-clipped pixmap of the given size from source pixmap."""
+    size = max(1, int(size))
+    result = QPixmap(size, size)
+    result.fill(Qt.transparent)
+
+    painter = QPainter(result)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    clip_path = QPainterPath()
+    clip_path.addEllipse(0, 0, size, size)
+    painter.setClipPath(clip_path)
+
     if src_pix is None or src_pix.isNull():
-        # placeholder background
-        pm = QPixmap(size, size)
-        pm.fill(Qt.transparent)
-        painter = QPainter(pm)
-        painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(QColor(COLOR_ELEVATED))
         painter.setPen(QColor(COLOR_BORDER))
         painter.drawEllipse(1, 1, size - 2, size - 2)
 
-        # Draw a simple person silhouette icon
         painter.setBrush(QColor(COLOR_TEXT_MUTED))
         painter.setPen(Qt.NoPen)
-        # Head
-        painter.drawEllipse(int(size * 0.35), int(size * 0.2), int(size * 0.3), int(size * 0.3))
-        # Body (semicircle)
-        painter.drawChord(int(size * 0.15), int(size * 0.55), int(size * 0.7), int(size * 0.7), 0 * 16, 180 * 16)
+        head_w = max(6, int(size * 0.24))
+        head_h = max(6, int(size * 0.24))
+        painter.drawEllipse(int(size * 0.38), int(size * 0.2), head_w, head_h)
+        body_w = int(size * 0.48)
+        body_h = int(size * 0.34)
+        painter.drawEllipse(int(size * 0.26), int(size * 0.44), body_w, body_h)
+    else:
+        scaled = src_pix.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        dx = (scaled.width() - size) // 2
+        dy = (scaled.height() - size) // 2
+        painter.drawPixmap(-dx, -dy, scaled)
 
-        painter.end()
-        return pm
-
-    scaled = src_pix.scaled(size, size, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-    result = QPixmap(size, size)
-    result.fill(Qt.transparent)
-    painter = QPainter(result)
-    painter.setRenderHint(QPainter.Antialiasing)
-    path = QPainterPath()
-    path.addEllipse(0, 0, size, size)
-    painter.setClipPath(path)
-    # center the scaled image
-    dx = (scaled.width() - size) // 2
-    dy = (scaled.height() - size) // 2
-    painter.drawPixmap(-dx, -dy, scaled)
     painter.end()
     return result
 
@@ -344,7 +342,8 @@ class LoginPage(QWidget):
 
         card = QFrame()
         card.setObjectName("loginCard")
-        card.setMaximumWidth(480)
+        card.setMinimumWidth(560)
+        card.setMaximumWidth(640)
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(40, 40, 40, 40)
         card_layout.setSpacing(18)
@@ -360,13 +359,17 @@ class LoginPage(QWidget):
         card_layout.addWidget(subtitle)
 
         form = QFormLayout()
-        form.setSpacing(14)
+        form.setSpacing(16)
         form.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.email_edit = QLineEdit()
         self.email_edit.setPlaceholderText("მაგ.: admin@carwash.ge")
+        self.email_edit.setMinimumHeight(42)
+        self.email_edit.setMinimumWidth(320)
         self.password_edit = QLineEdit()
         self.password_edit.setEchoMode(QLineEdit.Password)
         self.password_edit.setPlaceholderText("შეიყვანეთ პაროლი")
+        self.password_edit.setMinimumHeight(42)
+        self.password_edit.setMinimumWidth(320)
         form.addRow("ელფოსტა:", self.email_edit)
         form.addRow("პაროლი:", self.password_edit)
         card_layout.addLayout(form)
@@ -504,13 +507,36 @@ class CustomerDashboard(QWidget):
 
         # Header area
         header_card = QFrame()
-        header_card.setObjectName("loginCard") # Reuse card style
+        header_card.setObjectName("loginCard")
         header_card_layout = QVBoxLayout(header_card)
+        header_card_layout.setSpacing(12)
         
         self.header = QLabel()
         self.header.setObjectName("dashboardHeader")
         self.header.setWordWrap(True)
         header_card_layout.addWidget(self.header)
+
+        summary_card = QFrame()
+        summary_card.setObjectName("summaryCard")
+        summary_layout = QGridLayout(summary_card)
+        summary_layout.setSpacing(12)
+        self.balance_value = QLabel()
+        self.points_value = QLabel()
+        self.tier_value = QLabel()
+        self.upcoming_preview = QLabel()
+        self.upcoming_preview.setWordWrap(True)
+        self.balance_value.setObjectName("summaryValue")
+        self.points_value.setObjectName("summaryValue")
+        self.tier_value.setObjectName("summaryValue")
+        summary_layout.addWidget(QLabel("ბალანსი:"), 0, 0)
+        summary_layout.addWidget(self.balance_value, 0, 1)
+        summary_layout.addWidget(QLabel("ქულები:"), 1, 0)
+        summary_layout.addWidget(self.points_value, 1, 1)
+        summary_layout.addWidget(QLabel("ლოიალობის დონე:"), 2, 0)
+        summary_layout.addWidget(self.tier_value, 2, 1)
+        summary_layout.addWidget(QLabel("მომავალი ჯავშნები:"), 0, 2, 1, 2)
+        summary_layout.addWidget(self.upcoming_preview, 1, 2, 2, 2)
+        header_card_layout.addWidget(summary_card)
 
         # Loyalty Area
         self.loyalty_container = QWidget()
@@ -520,33 +546,37 @@ class CustomerDashboard(QWidget):
         
         layout.addWidget(header_card)
 
-        tabs = QTabWidget()
+        self.tabs = QTabWidget()
+        self.tabs.tabBar().hide()
+        self._tab_indices = {}
 
         # --- Cars tab ---
         cars_tab = QWidget()
         cars_layout = QVBoxLayout(cars_tab)
-        self.cars_table = self._make_table(["სანომრე", "მოდელი", "ფერი"])
+        self.cars_table = self._make_table(["სანომრე", "მწარმოებელი", "მოდელი", "ფერი", ""])
         cars_layout.addWidget(self.cars_table)
-
-        remove_btn = QPushButton("არჩეული მანქანის წაშლა")
-        remove_btn.setObjectName("secondaryBtn")
-        remove_btn.clicked.connect(self._remove_car)
-        cars_layout.addWidget(remove_btn)
 
         add_group = QGroupBox("მანქანის დამატება")
         add_form = QFormLayout(add_group)
         self.plate_edit = QLineEdit()
         self.plate_edit.setPlaceholderText("AA-123-BB")
+        self.make_edit = QLineEdit()
+        self.make_edit.setPlaceholderText("Toyota")
         self.model_edit = QLineEdit()
+        self.model_edit.setPlaceholderText("Camry")
         self.color_edit = QLineEdit()
+        self.color_edit.setPlaceholderText("თეთრი")
         add_form.addRow("სანომრე:", self.plate_edit)
+        add_form.addRow("მწარმოებელი:", self.make_edit)
         add_form.addRow("მოდელი:", self.model_edit)
         add_form.addRow("ფერი:", self.color_edit)
         add_btn = QPushButton("➕ დამატება")
+        add_btn.setObjectName("primaryBtn")
         add_btn.clicked.connect(self._add_car)
         add_form.addRow(add_btn)
         cars_layout.addWidget(add_group)
-        tabs.addTab(cars_tab, "მანქანები")
+        self._tab_indices["cars"] = self.tabs.count()
+        self.tabs.addTab(cars_tab, "მანქანები")
 
         # --- Booking tab ---
         book_tab = QWidget()
@@ -579,12 +609,14 @@ class CustomerDashboard(QWidget):
         book_form.addRow(self_service_btn)
         book_layout.addLayout(book_form)
 
-        book_btn = QPushButton("ჯავშნის შექმნა")
-        book_btn.setObjectName("primaryBtn")
-        book_btn.clicked.connect(self._create_booking)
-        book_layout.addWidget(book_btn)
+        self.book_btn = QPushButton("ჯავშნის შექმნა")
+        self.book_btn.setObjectName("primaryBtn")
+        self.book_btn.setMinimumHeight(48)
+        self.book_btn.clicked.connect(self._create_booking)
+        book_layout.addWidget(self.book_btn)
         book_layout.addStretch()
-        tabs.addTab(book_tab, "ახალი ჯავშანი")
+        self._tab_indices["booking"] = self.tabs.count()
+        self.tabs.addTab(book_tab, "ახალი ჯავშანი")
 
         # --- Upcoming tab ---
         upcoming_tab = QWidget()
@@ -593,10 +625,8 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "დრო", "ტიპი", "სტატუსი", "ფასი"]
         )
         upcoming_layout.addWidget(self.upcoming_table)
-        cancel_btn = QPushButton("არჩეული ჯავშნის გაუქმება")
-        cancel_btn.clicked.connect(self._cancel_booking)
-        upcoming_layout.addWidget(cancel_btn)
-        tabs.addTab(upcoming_tab, "მომავალი ჯავშნები")
+        self._tab_indices["upcoming"] = self.tabs.count()
+        self.tabs.addTab(upcoming_tab, "მომავალი ჯავშნები")
 
         # --- History tab ---
         history_tab = QWidget()
@@ -605,9 +635,10 @@ class CustomerDashboard(QWidget):
             ["სადგური", "მანქანა", "თარიღი", "ტიპი", "ფასი"]
         )
         history_layout.addWidget(self.history_table)
-        tabs.addTab(history_tab, "ისტორია")
+        self._tab_indices["history"] = self.tabs.count()
+        self.tabs.addTab(history_tab, "ისტორია")
 
-        layout.addWidget(tabs)
+        layout.addWidget(self.tabs)
         scroll.setWidget(container)
         main_layout.addWidget(scroll)
 
@@ -622,9 +653,21 @@ class CustomerDashboard(QWidget):
         if not user: return
 
         self.header.setText(
-            f"<b>{user.name}</b> — {user.get_dashboard()}<br>"
-            f"ანგარიშის ბალანსი: {user.balance} ₾"
+            f"<b>{user.name}</b> — {user.get_dashboard()}"
         )
+        self.balance_value.setText(f"{user.balance} ₾")
+        self.points_value.setText(f"{user.points} pts")
+        tier, next_tier, min_pts, max_pts, current_pts = user.get_loyalty_info()
+        self.tier_value.setText(f"{tier} ({current_pts}/{max_pts} pts)")
+        upcoming = self._all_upcoming()[:3]
+        if upcoming:
+            preview = "<br>".join(
+                f"• {b.station.name} — {b.date} {b.time.strftime('%H:%M')}"
+                for b in upcoming
+            )
+        else:
+            preview = "ჯავშნები არ არის"
+        self.upcoming_preview.setText(preview)
         
         # Refresh Loyalty Bars
         for i in reversed(range(self.loyalty_bars_layout.count())): 
@@ -659,8 +702,15 @@ class CustomerDashboard(QWidget):
             row = self.cars_table.rowCount()
             self.cars_table.insertRow(row)
             self.cars_table.setItem(row, 0, QTableWidgetItem(car.plate))
-            self.cars_table.setItem(row, 1, QTableWidgetItem(car.model))
-            self.cars_table.setItem(row, 2, QTableWidgetItem(car.color))
+            self.cars_table.setItem(row, 1, QTableWidgetItem(getattr(car, "make", "") or ""))
+            self.cars_table.setItem(row, 2, QTableWidgetItem(car.model))
+            self.cars_table.setItem(row, 3, QTableWidgetItem(car.color))
+
+            delete_btn = QPushButton("🗑")
+            delete_btn.setToolTip("მანქანის წაშლა")
+            delete_btn.setObjectName("secondaryBtn")
+            delete_btn.clicked.connect(lambda checked=False, plate=car.plate: self._remove_car(plate))
+            self.cars_table.setCellWidget(row, 4, delete_btn)
             self.car_combo.addItem(str(car), car)
 
     def _add_car(self):
@@ -669,10 +719,12 @@ class CustomerDashboard(QWidget):
             register_car(
                 user,
                 self.plate_edit.text().strip(),
+                self.make_edit.text().strip(),
                 self.model_edit.text().strip(),
                 self.color_edit.text().strip(),
             )
             self.plate_edit.clear()
+            self.make_edit.clear()
             self.model_edit.clear()
             self.color_edit.clear()
             self.refresh()
@@ -680,26 +732,25 @@ class CustomerDashboard(QWidget):
         except (ValueError, TypeError) as exc:
             show_error(self, "მანქანა", exc)
 
-    def _remove_car(self):
+    def _remove_car(self, plate):
         user = self.store.current_user
-        row = self.cars_table.currentRow()
-        if row < 0:
-            show_error(self, "წაშლა", ValueError("აირჩიეთ მანქანა ცხრილში"))
+        if not plate:
             return
-        plate_item = self.cars_table.item(row, 0)
-        if not plate_item:
-            show_error(self, "წაშლა", ValueError("სანომრე ვერ მოიძებნა"))
+        reply = QMessageBox.question(
+            self,
+            "მანქანის წაშლა",
+            f"დარწმუნებული ხართ, რომ გსურთ მანქანის წაშლა სანომრეებით {plate}?",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
             return
-        plate = plate_item.text().strip()
 
-        # Prevent deletion if there are upcoming bookings for this car
         upcoming_for_car = [b for b in self._all_upcoming() if b.car.plate.upper() == plate.upper()]
         if upcoming_for_car:
             show_error(self, "წაშლა", ValueError("ამ მანქანაზე აქტიური ჯავშანია — ჯერ გააუქმეთ ჯავშნები"))
             return
         try:
             remove_car(user, plate)
-            # Also remove related bookings from in-memory stations history for consistency
             for st in self.store.stations:
                 st.bookings = [b for b in st.bookings if not (b.customer == user and b.car.plate.upper() == plate.upper())]
             self.refresh()
@@ -716,6 +767,10 @@ class CustomerDashboard(QWidget):
         self._populate_stations(filtered)
         if not filtered:
             show_info(self, "ძებნა", "ამ რაიონში სადგური ვერ მოიძებნა")
+
+    def show_tab(self, tab_key):
+        if tab_key in self._tab_indices:
+            self.tabs.setCurrentIndex(self._tab_indices[tab_key])
 
     def _filter_self_service(self):
         filtered = find_self_service_stations(self.store.stations)
@@ -1330,28 +1385,61 @@ class MainWindow(QMainWindow):
         top_bar = QHBoxLayout(top_bar_frame)
         top_bar.setContentsMargins(20, 10, 20, 10)
         top_bar.setSpacing(12)
-        self.user_label = QLabel()
-        self.user_label.setObjectName("userLabel")
-        top_bar.addWidget(self.user_label)
+        self.nav_toggle_btn = QPushButton("☰")
+        self.nav_toggle_btn.setObjectName("navToggle")
+        self.nav_toggle_btn.setFixedWidth(44)
+        self.nav_toggle_btn.clicked.connect(self._toggle_side_nav)
+        top_bar.addWidget(self.nav_toggle_btn)
+
+        self.user_link_btn = QPushButton()
+        self.user_link_btn.setObjectName("userLinkBtn")
+        self.user_link_btn.clicked.connect(self._show_profile)
+        top_bar.addWidget(self.user_link_btn)
         top_bar.addStretch()
-        logout_btn = QPushButton("გასვლა")
-        logout_btn.setObjectName("secondaryBtn")
-        logout_btn.clicked.connect(self._logout)
-        top_bar.addWidget(logout_btn)
 
-        profile_btn = QPushButton("პროფილი")
-        profile_btn.setObjectName("secondaryBtn")
-        profile_btn.clicked.connect(self._show_profile)
-        top_bar.addWidget(profile_btn)
-
-        # Avatar to the right of profile button
         self.avatar_label = QLabel()
         self.avatar_label.setFixedSize(44, 44)
         self.avatar_label.setStyleSheet(f"border: 2px solid {COLOR_BORDER}; border-radius: 22px; background: {COLOR_ELEVATED};")
         self.avatar_label.setAlignment(Qt.AlignCenter)
         top_bar.addWidget(self.avatar_label)
 
+        logout_btn = QPushButton("გასვლა")
+        logout_btn.setObjectName("secondaryBtn")
+        logout_btn.clicked.connect(self._logout)
+        top_bar.addWidget(logout_btn)
+
         root.addWidget(top_bar_frame)
+
+        content_area = QWidget()
+        content_layout = QHBoxLayout(content_area)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
+
+        self.side_nav_frame = QFrame()
+        self.side_nav_frame.setObjectName("sideNav")
+        self.side_nav_frame.setFixedWidth(220)
+        self.side_nav_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.side_nav_frame.hide()
+        nav_layout = QVBoxLayout(self.side_nav_frame)
+        nav_layout.setContentsMargins(12, 12, 12, 12)
+        nav_layout.setSpacing(10)
+        self.nav_buttons = []
+        for label, action in [
+            ("მთავარი გვერდი", "home"),
+            ("ჩემი მანქანები", "cars"),
+            ("ახალი ჯავშნის შექმნა", "booking"),
+            ("მომავალი ჯავშნები", "upcoming"),
+            ("ჯავშნების ისტორია", "history"),
+        ]:
+            btn = QPushButton(label)
+            btn.setObjectName("navBtn")
+            btn.setMinimumHeight(42)
+            btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            btn.clicked.connect(lambda checked=False, key=action: self._handle_nav_action(key))
+            nav_layout.addWidget(btn)
+            self.nav_buttons.append(btn)
+        nav_layout.addStretch()
+        content_layout.addWidget(self.side_nav_frame, 0, Qt.AlignLeft)
 
         self.stack = QStackedWidget()
         self.login_page = LoginPage(store, self._on_login)
@@ -1365,7 +1453,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.staff_dashboard)
         self.stack.addWidget(self.admin_dashboard)
         self.stack.addWidget(self.profile_page)
-        root.addWidget(self.stack)
+        content_layout.addWidget(self.stack, 1)
+        root.addWidget(content_area)
 
         self._apply_styles()
         self.top_bar_frame.hide()
@@ -1394,6 +1483,27 @@ class MainWindow(QMainWindow):
                 color: {COLOR_TEXT_MUTED};
                 font-size: {FONT_SIZE_SMALL}px;
                 font-weight: 500;
+            }}
+
+            #sideNav {{
+                background-color: {COLOR_SURFACE};
+                border: 1px solid {COLOR_BORDER};
+                border-radius: 16px;
+            }}
+
+            #navBtn {{
+                background-color: transparent;
+                border: 1px solid transparent;
+                color: {COLOR_TEXT};
+                padding: 10px 14px;
+                border-radius: 10px;
+                text-align: left;
+                min-height: 42px;
+            }}
+
+            #navBtn:hover {{
+                background-color: {COLOR_HOVER};
+                border-color: {COLOR_BORDER};
             }}
 
             #loginCard, #registerDialog {{
@@ -1537,6 +1647,7 @@ class MainWindow(QMainWindow):
             /* Inputs */
             QLineEdit, QComboBox, QDateEdit, QTimeEdit {{
                 background-color: {COLOR_ELEVATED};
+                color: {COLOR_TEXT};
                 border: 1px solid {COLOR_BORDER};
                 border-radius: 10px;
                 padding: 10px 14px;
@@ -1577,7 +1688,9 @@ class MainWindow(QMainWindow):
 
     def _logout(self):
         self.store.logout()
-        self.user_label.clear()
+        self.user_link_btn.setText("")
+        self.avatar_label.clear()
+        self.side_nav_frame.hide()
         self.top_bar_frame.hide()
         self.stack.setCurrentWidget(self.login_page)
 
@@ -1601,13 +1714,35 @@ class MainWindow(QMainWindow):
         elif user.role == "admin":
             self.stack.setCurrentWidget(self.admin_dashboard)
 
+    def _toggle_side_nav(self):
+        self.side_nav_frame.setVisible(not self.side_nav_frame.isVisible())
+
+    def _handle_nav_action(self, action):
+        if not self.store.current_user:
+            return
+        if action == "home":
+            self.customer_dashboard.show_tab("cars")
+            self.stack.setCurrentWidget(self.customer_dashboard)
+        elif action == "cars":
+            self.customer_dashboard.show_tab("cars")
+            self.stack.setCurrentWidget(self.customer_dashboard)
+        elif action == "booking":
+            self.customer_dashboard.show_tab("booking")
+            self.stack.setCurrentWidget(self.customer_dashboard)
+        elif action == "upcoming":
+            self.customer_dashboard.show_tab("upcoming")
+            self.stack.setCurrentWidget(self.customer_dashboard)
+        elif action == "history":
+            self.customer_dashboard.show_tab("history")
+            self.stack.setCurrentWidget(self.customer_dashboard)
+
     def _refresh_top_bar_user(self):
         user = self.store.current_user
         if not user:
-            self.user_label.clear()
+            self.user_link_btn.setText("")
             self.avatar_label.clear()
             return
-        self.user_label.setText(f"მომხმარებელი: {user}  |  {user.get_dashboard()}")
+        self.user_link_btn.setText(f"{user.name} • პროფილი")
         if user.profile_picture:
             pm = QPixmap(user.profile_picture)
         else:

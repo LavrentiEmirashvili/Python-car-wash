@@ -54,6 +54,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER NOT NULL,
             plate TEXT UNIQUE NOT NULL,
+            make TEXT NOT NULL DEFAULT '',
             model TEXT NOT NULL,
             color TEXT NOT NULL,
             FOREIGN KEY (customer_id) REFERENCES users (id)
@@ -90,6 +91,11 @@ def init_db():
         cursor.execute("ALTER TABLE users ADD COLUMN balance REAL DEFAULT 0.0")
     if 'profile_picture' not in columns:
         cursor.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
+
+    cursor.execute("PRAGMA table_info(cars)")
+    car_columns = [row['name'] for row in cursor.fetchall()]
+    if 'make' not in car_columns:
+        cursor.execute("ALTER TABLE cars ADD COLUMN make TEXT NOT NULL DEFAULT ''")
     
     conn.commit()
     conn.close()
@@ -157,12 +163,13 @@ def save_car(customer_id, car):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO cars (customer_id, plate, model, color)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO cars (customer_id, plate, make, model, color)
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(plate) DO UPDATE SET
+                make=excluded.make,
                 model=excluded.model,
                 color=excluded.color
-        """, (customer_id, car.plate, car.model, car.color))
+        """, (customer_id, car.plate, car.make, car.model, car.color))
         conn.commit()
     finally:
         conn.close()
@@ -277,7 +284,7 @@ def load_all_data():
     cursor.execute("SELECT * FROM cars")
     car_rows = cursor.fetchall()
     for row in car_rows:
-        c = Car(row['plate'], row['model'], row['color'])
+        c = Car(row['plate'], row['model'], row['color'], row['make'] or '')
         customer = user_map.get(row['customer_id'])
         if customer and isinstance(customer, Customer):
             customer.add_car(c)

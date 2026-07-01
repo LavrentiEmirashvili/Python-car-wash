@@ -16,4 +16,3 @@ bookings
 2. improve the filter by region function
 3. fix the book button for better visibility and functionality
 4. add a function that checks the time of booking so that it cannot be booked in the past.
-

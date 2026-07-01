@@ -149,8 +149,8 @@ def register_staff(name, email, phone, password, station_id):
 
 @log_action
 @validate_plate
-def register_car(customer, plate, model, color):
-    car = Car(plate=plate, model=model, color=color)
+def register_car(customer, plate, make, model, color):
+    car = Car(plate=plate, model=model, color=color, make=make)
     customer.add_car(car)   # თუ დუბლირებული plate-ია, customer.add_car() თავად ისვრის ValueError-ს
     
     # Save to database
@@ -192,6 +192,10 @@ def create_booking(customer, station, car, date, time, booking_type):
     Booking-ის constructor უკვე ამოწმებს booking_type-ს და self_service-ის
     ხელმისაწვდომობას -- ამიტომ აქ მხოლოდ დროის კონფლიქტს ვამოწმებთ.
     """
+    booking_datetime = datetime.datetime.combine(date, time)
+    if booking_datetime <= datetime.datetime.now():
+        raise ValueError("ჯავშანი წარსულ დროში ვერ შეიქმნება")
+
     if not station.is_available(date, time):
         raise ValueError("ეს დროის სლოტი დაკავებულია, აირჩიეთ სხვა დრო")
 
@@ -273,7 +277,10 @@ def most_popular_service(user, station):
 # ============================================================
 
 def find_stations_by_district(stations, district):
-    return [s for s in stations if s.district.lower() == district.lower()]
+    district_query = district.strip().lower()
+    if not district_query:
+        return list(stations)
+    return [s for s in stations if district_query in s.district.lower()]
 
 
 def find_self_service_stations(stations):

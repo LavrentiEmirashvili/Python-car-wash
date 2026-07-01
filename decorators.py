@@ -59,7 +59,7 @@ def validate_phone(func):
 
 
 def validate_plate(func):
-    """NEW: validates Georgian car plate format — AA-123-BB"""
+    """validates Georgian car plate format — AA-123-BB"""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         pattern = r"^[A-Z]{2}-\d{3}-[A-Z]{2}$"
